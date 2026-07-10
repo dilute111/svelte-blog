@@ -1,0 +1,85 @@
+/* ===== RESET ===== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* ===== ROOT VARIABLES ===== */
+:root {
+    /* Цвета */
+    --bg-color: #f8f9fa;
+    --text-color: #1a1a2e;
+    --primary-color: #6c5ce7;
+    --primary-hover: #5a4bd1;
+    --card-bg: #ffffff;
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --border-radius: 12px;
+
+    /* Шрифты */
+    --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --line-height: 1.6;
+
+    /* Размеры */
+    --max-width: 800px;
+    --spacing: 1.5rem;
+}
+
+/* ===== BODY ===== */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    line-height: var(--line-height);
+    padding: 2rem 1rem;
+    max-width: var(--max-width);
+    margin: 0 auto;
+    min-height: 100vh;
+}
+
+/* ===== HEADER ===== */
+header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 2px solid rgba(108, 92, 231, 0.15);
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+
+header > a {
+    color: var(--text-color);
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 1.5rem;
+    letter-spacing: -0.5px;
+    transition: color 0.2s;
+}
+
+header > a:hover {
+    color: var(--primary-color);
+}
+
+/* ===== LINKS ===== */
+a {
+    color: var(--primary-color);
+    text-decoration: none;
+    transition: color 0.2s, background-color 0.2s;
+}
+
+a:hover {
+    color: var(--primary-hover);
+}
+
+/* ===== UTILITY ===== */
+.container {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+.text-center {
+    text-align: center;
+}
