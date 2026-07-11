@@ -62,6 +62,12 @@ header > a:hover {
     color: var(--primary-color);
 }
 
+header a.active {
+    color: var(--primary-color);
+    font-weight: 700;
+    border-bottom: 2px solid var(--primary-color);
+}
+
 /* ===== LINKS ===== */
 a {
     color: var(--primary-color);

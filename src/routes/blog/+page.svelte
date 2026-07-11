@@ -10,6 +10,7 @@
 
 <h1>Blog</h1>
 {#await data.posts}
+<!--    TODO: сделать анимацию лоадера-->
     <p>Loading...</p>
 {:then posts}
     {#each posts as post (post.id)}

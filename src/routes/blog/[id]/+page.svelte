@@ -14,6 +14,7 @@
 <a href="/blog">Back to blog</a>
 
 {#await data.post}
+<!--    TODO: сделать анимацию лоадера-->
 	<p>Loading...</p>
 {:then post}
 	<h1>{post.title}</h1>
