@@ -1,8 +1,8 @@
-import {getPosts} from "$lib/server/services/postService";
+
 
 export async function load({ fetch }) {
-
+    const res = fetch('/api/posts')
     return {
-        posts: getPosts(fetch)
+        posts: res.then(r => r.json())
     }
 }
