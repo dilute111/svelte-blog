@@ -1,10 +1,11 @@
-import { getPost }  from "$lib/server/services/postService";
 
 
-export async function load({ params, fetch }) {
+export async function load({ params, fetch, depends }) {
+    depends('app:auth')
+
     const { id } = params
-
+    const res = fetch(`/api/posts/${id}`)
     return {
-        post: getPost(id, fetch)
+        post: res.then(r => r.json())
     }
 }

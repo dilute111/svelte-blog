@@ -1,11 +1,8 @@
 import {getPosts} from "$lib/server/services/postService";
-import {error, json} from "@sveltejs/kit";
+import {json} from "@sveltejs/kit";
 
 
-export async function GET({ fetch, locals }) {
-    if (!locals.isAuthorized) {
-        error(401, 'Unauthorized');
-    }
+export async function GET({ fetch }) {
 
     const posts = await getPosts(fetch)
     return json(posts)
