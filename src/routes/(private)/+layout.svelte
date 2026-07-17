@@ -2,6 +2,7 @@
 
     import {getAuthStatus, onAuthChange} from "$lib/shared/auth";
     import {onMount} from "svelte";
+    import Loader from "$lib/components/Loader.svelte";
 
     let isLoggedIn = $state(getAuthStatus())
     let isHydrated = $state(false)
@@ -21,7 +22,7 @@
 
 <main class="container">
     {#if !isHydrated}
-        <div>Loading...</div>
+        <Loader/>
     {:else if isLoggedIn}
         {@render children() }
         {:else}

@@ -1,5 +1,8 @@
 <script lang="ts">
 
+    import Loader from "$lib/components/Loader.svelte";
+    import {resolve} from "$app/paths";
+
     let { data } = $props()
 </script>
 
@@ -14,8 +17,7 @@
 <a href="/blog">Back to blog</a>
 
 {#await data.post}
-<!--    TODO: сделать анимацию лоадера-->
-	<p>Loading...</p>
+	<Loader/>
 {:then post}
 	<h1>{post.title}</h1>
     <p>{post.body}</p>

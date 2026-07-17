@@ -1,5 +1,7 @@
 <script lang="ts">
 
+    import Loader from "$lib/components/Loader.svelte";
+
     let {data} = $props()
 
 </script>
@@ -10,8 +12,7 @@
 
 <h1>Blog</h1>
 {#await data.posts}
-<!--    TODO: сделать анимацию лоадера-->
-    <p>Loading...</p>
+    <Loader/>
 {:then posts}
     {#each posts as post (post.id)}
         <li>
