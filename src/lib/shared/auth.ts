@@ -6,7 +6,10 @@ const listeners: (() => void)[] = []
 
 export function getAuthStatus(): boolean {
     if (typeof window === 'undefined') return false
-    return localStorage.getItem(STORAGE_KEY) === 'true'
+    const hasSessionCookie = document.cookie
+        .split('; ')
+        .some(row => row.startsWith('session=') && row.split('=')[1] === "true")
+    return hasSessionCookie
 }
 
 export function login(): void {
@@ -15,7 +18,7 @@ export function login(): void {
     // localStorage - для UI
     localStorage.setItem(STORAGE_KEY, 'true')
     // Куки для сервера
-    document.cookie = 'session=true; path=/; max-age=3600'
+    document.cookie = 'session=true; path=/; max-age=86400'
 
     invalidate('app:auth')
 
