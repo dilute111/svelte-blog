@@ -1,7 +1,6 @@
 <script lang="ts">
 
     import Loader from "$lib/components/Loader.svelte";
-    import {resolve} from "$app/paths";
 
     let { data } = $props()
 </script>
