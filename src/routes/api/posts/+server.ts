@@ -1,7 +1,7 @@
-import {getPosts} from "$lib/server/services/postService";
+import {createPost, getPosts} from "$lib/server/services/postService";
 import {error, json} from "@sveltejs/kit";
 import {requireAuth} from "$lib/server/middleware/auth";
-import {createPost} from "$lib/server/repo/postRepo";
+
 
 
 export async function GET({ fetch }) {
