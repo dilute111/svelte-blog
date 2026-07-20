@@ -4,6 +4,9 @@
     import {onMount} from "svelte";
     import {logout} from "$lib/shared/auth";
 
+    import TheForm from "$lib/components/TheForm.svelte";
+    import {invalidate} from "$app/navigation";
+
     let {data} = $props()
 
     let shouldLogout = $state(false);
@@ -21,6 +24,10 @@
         }
     })
 
+    async function handlePostCreated() {
+        await invalidate('app:auth');
+    }
+
 </script>
 
 <svelte:head>
@@ -28,6 +35,16 @@
 </svelte:head>
 
 <h1>Blog</h1>
+
+<TheForm
+        fields={[
+        { name: 'title', label: 'Заголовок', placeholder: 'Введите заголовок' },
+        { name: 'body', label: 'Текст', type: 'textarea', placeholder: 'Введите текст поста' }
+    ]}
+        submitText="Создать пост"
+        onSubmit={handlePostCreated}
+/>
+
 {#await data.posts}
     <Loader/>
 {:then result}
