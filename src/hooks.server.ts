@@ -1,7 +1,8 @@
 import {requireAuth} from "$lib/server/middleware/auth";
+import type {Handle} from "@sveltejs/kit";
 
 
-export async function handle({ event, resolve }) {
+export const handle: Handle = async({ event, resolve }) => {
     const sessionCookie = event.cookies.get('session')
 
     event.locals.isAuthorized = sessionCookie === "true"
@@ -10,5 +11,5 @@ export async function handle({ event, resolve }) {
         requireAuth(event.locals)
     }
 
-    return await resolve(event)
+    return resolve(event)
 }

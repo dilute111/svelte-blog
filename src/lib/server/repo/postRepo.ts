@@ -1,10 +1,11 @@
+import type {ICreatePost, IPost} from "$lib/types";
 
 
-let posts: any[] = []
+let posts: IPost[] = []
 let nextId = 1
 let initialized = false
 
-export function initPosts(data: any[]) {
+export function initPosts(data: IPost[]) {
     if (!initialized) {
         posts = data.map(p => ({...p, id: p.id}))
         nextId = Math.max(...posts.map(p => p.id), 0) + 1
@@ -12,16 +13,16 @@ export function initPosts(data: any[]) {
     }
 }
 
-export function getPosts() {
+export function getPosts(): IPost[] {
     return posts
 }
 
-export function getPost(id: number) {
+export function getPost(id: number): IPost | undefined {
     return posts.find(p => p.id === id)
 }
 
-export function createPost(data: { title?: string; body?: string }) {
-    const newPost = { id: nextId++, ...data }
+export function createPost(data: ICreatePost): IPost {
+    const newPost: IPost = { id: nextId++, ...data }
     posts.push(newPost)
     return newPost
 }

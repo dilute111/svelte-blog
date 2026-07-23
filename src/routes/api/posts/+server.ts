@@ -1,12 +1,13 @@
 import {createPost, getPosts} from "$lib/server/services/postService";
 import {error, json} from "@sveltejs/kit";
 import {requireAuth} from "$lib/server/middleware/auth";
+import type {ICreatePost, IPost} from "$lib/types";
 
 
 
 export async function GET({ fetch }) {
 
-    const posts = await getPosts(fetch)
+    const posts: IPost[] = await getPosts(fetch)
     return json(posts)
 }
 
@@ -15,7 +16,7 @@ export async function POST({ request, locals }) {
     requireAuth(locals)
 
     // 2. Parse request body
-    const { title, body } = await request.json()
+    const { title, body } = await request.json() as ICreatePost
 
     // 3. Validation
     if (!title || !body) {
@@ -23,7 +24,7 @@ export async function POST({ request, locals }) {
     }
 
     // 4. Create post
-    const newPost = await createPost({ title, body})
+    const newPost: IPost = await createPost({ title, body})
 
     // 5. Return response
     return json(newPost, { status: 201 })

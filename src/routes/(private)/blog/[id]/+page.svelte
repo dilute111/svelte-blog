@@ -1,8 +1,8 @@
 <script lang="ts">
-
     import Loader from "$lib/components/Loader.svelte";
+    import type {IBlogIdPageData} from "$lib/types";
 
-    let { data } = $props()
+    let { data }: { data: IBlogIdPageData } = $props()
 </script>
 
 <svelte:head>

@@ -7,8 +7,9 @@
     import TheForm from "$lib/components/TheForm.svelte";
     import {invalidate} from "$app/navigation";
     import Modal from "$lib/components/Modal.svelte";
+    import type {IBlogPageData} from "$lib/types";
 
-    let {data} = $props()
+    let {data}: { data: IBlogPageData } = $props()
 
     let shouldLogout = $state(false);
     let isModalOpen = $state(false)

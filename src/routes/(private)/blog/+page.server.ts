@@ -1,6 +1,7 @@
 import {type Actions, fail} from "@sveltejs/kit";
 import {createPost} from "$lib/server/services/postService";
 import {requireAuth} from "$lib/server/middleware/auth";
+import type {ICreatePost} from "$lib/types";
 
 export async function load({fetch, depends}) {
     depends('app:auth')
@@ -30,14 +31,16 @@ export const actions: Actions = {
         requireAuth(locals)
 
         const data = await request.formData();
-        const title = data.get('title') as string;
-        const body = data.get('body') as string;
+        const postData: ICreatePost = {
+            title: data.get('title') as string,
+            body: data.get('body') as string
+        }
 
-        if (!title || !body) {
+        if (!postData.title || !postData.body) {
             return fail(400, { error: 'Title and body are required' });
         }
 
-        await createPost({ title, body });
+        await createPost( postData );
         return { success: true };
     }
 };

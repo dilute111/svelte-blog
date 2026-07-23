@@ -1,8 +1,7 @@
 <script lang="ts">
-    import type {IFormProps} from "$lib/types/forms";
-
     import { enhance } from '$app/forms';
     import {invalidate} from "$app/navigation";
+    import type {IFormProps} from "$lib/types";
 
 
     let {fields, submitText = 'Отправить', onSubmit}: IFormProps = $props()
@@ -24,8 +23,8 @@
         error = null
     }
 
-    function handleError(err: any) {
-        error = err?.message || 'Произошла ошибка при отправке'
+    function handleError(err: unknown) {
+        error = err instanceof Error? err.message : 'Произошла ошибка при отправке'
         isSubmitting = false
     }
 

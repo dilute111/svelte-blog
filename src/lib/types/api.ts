@@ -1,0 +1,1 @@
+export type FetchFunction = (info: RequestInfo, init?: RequestInit) => Promise<Response>

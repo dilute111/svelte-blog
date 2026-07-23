@@ -1,6 +1,5 @@
 <script lang="ts">
-    import type {IModal} from "$lib/types/modal";
-
+    import type {IModal} from "$lib/types";
 
     let { isOpen, onClose }: IModal = $props()
 
