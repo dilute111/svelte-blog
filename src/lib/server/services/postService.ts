@@ -25,7 +25,6 @@ export async function getPosts(fetch: FetchFunction): Promise<IPost[]> {
         return postRepo.getPosts() // Returning from memory
     } catch (err) {
         console.log('API упал:', err);
-
         if (browser) {
             try {
                 const cached = localStorage.getItem(CACHE_KEY);
@@ -37,7 +36,7 @@ export async function getPosts(fetch: FetchFunction): Promise<IPost[]> {
             } catch {
                 console.error('Ошибка парсинга кэша');
             }
-        } 
+        }
         return [];
     }
 }

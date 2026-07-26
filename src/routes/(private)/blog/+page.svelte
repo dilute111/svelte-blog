@@ -28,22 +28,45 @@
         if (shouldLogout) {
             logout()
         }
-        const cached = localStorage.getItem('blog_posts');
-        if (cached) {
-            try {
-                cachedPosts = JSON.parse(cached);
-                hasError = true;
-            } catch {
-                cachedPosts = null;
+        let timeoutId: NodeJS.Timeout;
+
+        timeoutId = setTimeout(() => {
+            // Если через 3 секунды ответа нет — показываем кэш
+            const cached = localStorage.getItem('blog_posts');
+            if (cached) {
+                try {
+                    cachedPosts = JSON.parse(cached);
+                    hasError = true;
+                } catch {
+                    cachedPosts = [];
+                    hasError = false;
+                }
+            } else {
+                cachedPosts = [];
+                hasError = false;
             }
-        }
+        }, 3000);
+
         data.posts.then(result => {
+            clearTimeout(timeoutId)
             if (result.posts.length > 0) {
                 localStorage.setItem('blog_posts', JSON.stringify(result.posts));
                 cachedPosts = result.posts;
                 hasError = false;
             }
+        }).catch(() => {
+            clearTimeout(timeoutId)
+            const cached = localStorage.getItem('blog_posts');
+            if (cached) {
+                try {
+                    cachedPosts = JSON.parse(cached);
+                    hasError = true;
+                } catch {
+                    cachedPosts = null;
+                }
+            }
         })
+
     })
 
     async function handlePostCreated() {
@@ -85,7 +108,13 @@
     />
 </Modal>
 
-{#if cachedPosts}
+{#if cachedPosts === null}
+    <Loader/>
+{:else if cachedPosts.length === 0}
+    <p style="text-align: center; color: var(--text-muted);">
+        Нет постов
+    </p>
+{:else}
     <ul class="posts-list">
         {#each cachedPosts as post (post.id)}
             <li>
@@ -98,18 +127,6 @@
             Данные из кэша (ошибка подключения к серверу)
         </p>
     {/if}
-{:else}
-    {#await data.posts}
-        <Loader/>
-    {:then result}
-        {#each result.posts as post (post.id)}
-            <li>
-                <a href={`/blog/${post.id}`}>{post.title}</a>
-            </li>
-        {/each}
-    {:catch err}
-        <p style="color: red">{err.message}</p>
-    {/await}
 {/if}
 
 <style>
