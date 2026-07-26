@@ -7,12 +7,14 @@
     import TheForm from "$lib/components/TheForm.svelte";
     import {invalidate} from "$app/navigation";
     import Modal from "$lib/components/Modal.svelte";
-    import type {IBlogPageData} from "$lib/types";
+    import type {IBlogPageData, IPost} from "$lib/types";
 
     let {data}: { data: IBlogPageData } = $props()
 
     let shouldLogout = $state(false);
     let isModalOpen = $state(false)
+    let cachedPosts = $state<IPost[] | null>(null);
+    let hasError = $state(false);
 
     // Extract shouldLogout flag from the resolved posts data
     $effect(() => {
@@ -26,6 +28,22 @@
         if (shouldLogout) {
             logout()
         }
+        const cached = localStorage.getItem('blog_posts');
+        if (cached) {
+            try {
+                cachedPosts = JSON.parse(cached);
+                hasError = true;
+            } catch {
+                cachedPosts = null;
+            }
+        }
+        data.posts.then(result => {
+            if (result.posts.length > 0) {
+                localStorage.setItem('blog_posts', JSON.stringify(result.posts));
+                cachedPosts = result.posts;
+                hasError = false;
+            }
+        })
     })
 
     async function handlePostCreated() {
@@ -67,17 +85,32 @@
     />
 </Modal>
 
-{#await data.posts}
-    <Loader/>
-{:then result}
-    {#each result.posts as post (post.id)}
-        <li>
-            <a href={`/blog/${post.id}`}>{post.title}</a>
-        </li>
-    {/each}
-{:catch err}
-    <p style="color: red">{err.message}</p>
-{/await}
+{#if cachedPosts}
+    <ul class="posts-list">
+        {#each cachedPosts as post (post.id)}
+            <li>
+                <a href={`/blog/${post.id}`}>{post.title}</a>
+            </li>
+        {/each}
+    </ul>
+    {#if hasError}
+        <p style="color: orange; text-align: center;">
+            Данные из кэша (ошибка подключения к серверу)
+        </p>
+    {/if}
+{:else}
+    {#await data.posts}
+        <Loader/>
+    {:then result}
+        {#each result.posts as post (post.id)}
+            <li>
+                <a href={`/blog/${post.id}`}>{post.title}</a>
+            </li>
+        {/each}
+    {:catch err}
+        <p style="color: red">{err.message}</p>
+    {/await}
+{/if}
 
 <style>
     .blog-header {
