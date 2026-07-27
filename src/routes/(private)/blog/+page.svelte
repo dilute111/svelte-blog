@@ -72,6 +72,13 @@
     async function handlePostCreated() {
         await invalidate('app:auth');
         isModalOpen = false
+
+        const result = await data.posts;
+        if (result.posts.length > 0) {
+            localStorage.setItem('blog_posts', JSON.stringify(result.posts));
+            cachedPosts = result.posts;
+            hasError = false;
+        }
     }
 
     function openModal() {
