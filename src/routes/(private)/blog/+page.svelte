@@ -3,7 +3,6 @@
     import Loader from "$lib/components/Loader.svelte";
     import {onMount} from "svelte";
     import {logout} from "$lib/shared/auth";
-
     import TheForm from "$lib/components/TheForm.svelte";
     import {invalidate} from "$app/navigation";
     import Modal from "$lib/components/Modal.svelte";
@@ -11,59 +10,40 @@
 
     let {data}: { data: IBlogPageData } = $props()
 
-    let shouldLogout = $state(false);
     let isModalOpen = $state(false)
-    let cachedPosts = $state<IPost[] | null>(null);
-    let hasError = $state(false);
-
-    // Extract shouldLogout flag from the resolved posts data
-    $effect(() => {
-        const result = data.posts as { shouldLogout?: boolean };
-        if (result?.shouldLogout) {
-            shouldLogout = true;
-        }
-    });
+    let postsDataOrCachedPosts = $state<IPost[] | null>(null);
+    let isFromCache = $state(false);
 
     onMount(() => {
-        if (shouldLogout) {
-            logout()
-        }
-        let timeoutId: NodeJS.Timeout;
+        // Extract shouldLogout flag from the resolved posts data
+        data.posts.then(result => {
+            if (result?.shouldLogout) {
+                logout();
+            }
+        });
 
+        let timeoutId: NodeJS.Timeout;
+        // Макрозадача setTimeout ждет выполнения промиса ниже и подхватывает поток, если промис не получит свежих данных
         timeoutId = setTimeout(() => {
-            // Если через 3 секунды ответа нет — показываем кэш
+            // Если через 3 секунды ответа нет - показываем кэш
             const cached = localStorage.getItem('blog_posts');
             if (cached) {
-                try {
-                    cachedPosts = JSON.parse(cached);
-                    hasError = true;
-                } catch {
-                    cachedPosts = [];
-                    hasError = false;
-                }
+                    postsDataOrCachedPosts = JSON.parse(cached);
+                    isFromCache = true;
             } else {
-                cachedPosts = [];
-                hasError = false;
+                postsDataOrCachedPosts = [];
+                isFromCache = false;
             }
         }, 3000);
 
         data.posts.then(result => {
-            clearTimeout(timeoutId)
+            // Промис в статусе fulfilled - API ответил успешно
+            clearTimeout(timeoutId) // Отмена setTimeout
+
             if (result.posts.length > 0) {
                 localStorage.setItem('blog_posts', JSON.stringify(result.posts));
-                cachedPosts = result.posts;
-                hasError = false;
-            }
-        }).catch(() => {
-            clearTimeout(timeoutId)
-            const cached = localStorage.getItem('blog_posts');
-            if (cached) {
-                try {
-                    cachedPosts = JSON.parse(cached);
-                    hasError = true;
-                } catch {
-                    cachedPosts = null;
-                }
+                postsDataOrCachedPosts = result.posts;
+                isFromCache = false;
             }
         })
 
@@ -76,8 +56,8 @@
         const result = await data.posts;
         if (result.posts.length > 0) {
             localStorage.setItem('blog_posts', JSON.stringify(result.posts));
-            cachedPosts = result.posts;
-            hasError = false;
+            postsDataOrCachedPosts = result.posts;
+            isFromCache = false;
         }
     }
 
@@ -115,21 +95,21 @@
     />
 </Modal>
 
-{#if cachedPosts === null}
+{#if postsDataOrCachedPosts === null}
     <Loader/>
-{:else if cachedPosts.length === 0}
+{:else if postsDataOrCachedPosts.length === 0}
     <p style="text-align: center; color: var(--text-muted);">
         Нет постов
     </p>
 {:else}
     <ul class="posts-list">
-        {#each cachedPosts as post (post.id)}
+        {#each postsDataOrCachedPosts as post (post.id)}
             <li>
                 <a href={`/blog/${post.id}`}>{post.title}</a>
             </li>
         {/each}
     </ul>
-    {#if hasError}
+    {#if isFromCache}
         <p style="color: orange; text-align: center;">
             Данные из кэша (ошибка подключения к серверу)
         </p>
