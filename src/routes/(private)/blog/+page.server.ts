@@ -12,7 +12,7 @@ export async function load({fetch, depends}) {
             return {
                 posts: [],
                 error: 'Unauthorized',
-                shouldLogout: true
+                //shouldLogout: true
             }
         }
         const posts = await res.json()

@@ -12,7 +12,7 @@ export interface ICreatePost {
     body: string
 }
 
-export interface IUpdatePost {
-    title?: string
-    body?: string
+export interface IPostResponse {
+    posts: IPost[]
+    shouldLogout?: boolean
 }

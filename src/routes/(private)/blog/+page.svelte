@@ -2,63 +2,50 @@
 
     import Loader from "$lib/components/Loader.svelte";
     import {onMount} from "svelte";
-    import {logout} from "$lib/shared/auth";
     import TheForm from "$lib/components/TheForm.svelte";
-    import {invalidate} from "$app/navigation";
     import Modal from "$lib/components/Modal.svelte";
-    import type {IBlogPageData, IPost} from "$lib/types";
+    import type {IBlogPageData} from "$lib/types";
+    import {usePostsSvelte} from "$lib/hooks/usePosts.svelte";
 
     let {data}: { data: IBlogPageData } = $props()
 
     let isModalOpen = $state(false)
-    let postsDataOrCachedPosts = $state<IPost[] | null>(null);
-    let isFromCache = $state(false);
 
-    onMount(() => {
-        // Extract shouldLogout flag from the resolved posts data
-        data.posts.then(result => {
-            if (result?.shouldLogout) {
-                logout();
-            }
-        });
+    const posts = usePostsSvelte(data);
+    let isLoading = $derived(posts.isLoading);
+    let postsData = $derived(posts.postsDataOrCachedPosts);
+    let isFromCache = $derived(posts.isFromCache);
+
+
+    onMount(async () => {
 
         let timeoutId: NodeJS.Timeout;
+
         // Макрозадача setTimeout ждет выполнения промиса ниже и подхватывает поток, если промис не получит свежих данных
         timeoutId = setTimeout(() => {
             // Если через 3 секунды ответа нет - показываем кэш
-            const cached = localStorage.getItem('blog_posts');
-            if (cached) {
-                    postsDataOrCachedPosts = JSON.parse(cached);
-                    isFromCache = true;
-            } else {
-                postsDataOrCachedPosts = [];
-                isFromCache = false;
-            }
+           posts.loadFromCache()
+
         }, 3000);
 
-        data.posts.then(result => {
-            // Промис в статусе fulfilled - API ответил успешно
-            clearTimeout(timeoutId) // Отмена setTimeout
 
-            if (result.posts.length > 0) {
-                localStorage.setItem('blog_posts', JSON.stringify(result.posts));
-                postsDataOrCachedPosts = result.posts;
-                isFromCache = false;
-            }
-        })
+        await posts.loadPosts()
+
+        clearTimeout(timeoutId);
 
     })
 
     async function handlePostCreated() {
-        await invalidate('app:auth');
-        isModalOpen = false
 
+        isModalOpen = false
+        await posts.refreshPosts()
         const result = await data.posts;
         if (result.posts.length > 0) {
             localStorage.setItem('blog_posts', JSON.stringify(result.posts));
-            postsDataOrCachedPosts = result.posts;
+            postsData = result.posts;
             isFromCache = false;
         }
+
     }
 
     function openModal() {
@@ -95,15 +82,15 @@
     />
 </Modal>
 
-{#if postsDataOrCachedPosts === null}
+{#if isLoading || postsData === null}
     <Loader/>
-{:else if postsDataOrCachedPosts.length === 0}
+{:else if postsData.length === 0}
     <p style="text-align: center; color: var(--text-muted);">
         Нет постов
     </p>
 {:else}
     <ul class="posts-list">
-        {#each postsDataOrCachedPosts as post (post.id)}
+        {#each postsData as post (post.id)}
             <li>
                 <a href={`/blog/${post.id}`}>{post.title}</a>
             </li>
