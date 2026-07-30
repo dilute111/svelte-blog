@@ -14,10 +14,7 @@ export function getAuthStatus(): boolean {
 
 export function login(): void {
 
-    if (typeof window === 'undefined') {
-
-        return
-    }
+    if (typeof window === 'undefined') return
 
     // localStorage - для UI
     localStorage.setItem(STORAGE_KEY, 'true')
@@ -25,7 +22,6 @@ export function login(): void {
     document.cookie = 'session=true; path=/; max-age=86400'
 
     invalidate('app:auth')
-
 
     listeners.forEach(fn => fn())
 

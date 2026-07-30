@@ -1,7 +1,6 @@
 // usePosts.svelte.ts
-import type { IBlogPageData, IPost, IPostResponse } from "$lib/types";
-import { logout } from "$lib/shared/auth";
-import { invalidate } from "$app/navigation";
+import type {IBlogPageData, IPost, IPostResponse} from "$lib/types";
+import {invalidate} from "$app/navigation";
 
 const CACHE_KEY = 'blog_posts';
 
@@ -15,7 +14,7 @@ export class PostsStore {
         this.data = data;
     }
 
-    private validationPostsLength = (result: IPostResponse) => {
+    private updatePosts = (result: IPostResponse) => {
         if (result.posts.length > 0) {
             localStorage.setItem(CACHE_KEY, JSON.stringify(result.posts));
             this.postsDataOrCachedPosts = result.posts;
@@ -30,12 +29,7 @@ export class PostsStore {
 
         try {
             const result = await this.data.posts;
-
-            if (result?.shouldLogout) {
-                logout();
-                return;
-            }
-            this.validationPostsLength(result);
+            this.updatePosts(result);
         } catch {
             this.loadFromCache();
         }

@@ -2,6 +2,7 @@ import {type Actions, fail} from "@sveltejs/kit";
 import {createPost} from "$lib/server/services/postService";
 import {requireAuth} from "$lib/server/middleware/auth";
 import type {ICreatePost} from "$lib/types";
+import {logout} from "$lib/shared/auth";
 
 export async function load({fetch, depends}) {
     depends('app:auth')
@@ -9,17 +10,16 @@ export async function load({fetch, depends}) {
     const fetchPosts = async () => {
         const res = await fetch('/api/posts')
         if (res.status === 401) {
+            logout()
             return {
                 posts: [],
                 error: 'Unauthorized',
-                //shouldLogout: true
+                // shouldLogout: true
             }
         }
         const posts = await res.json()
         return {posts}
     }
-
-
     return {
         posts: fetchPosts()
     }

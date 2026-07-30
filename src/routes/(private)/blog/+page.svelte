@@ -27,16 +27,11 @@
            posts.loadFromCache()
 
         }, 3000);
-
-
         await posts.loadPosts()
-
         clearTimeout(timeoutId);
-
     })
 
     async function handlePostCreated() {
-
         isModalOpen = false
         await posts.refreshPosts()
         const result = await data.posts;
@@ -45,7 +40,6 @@
             postsData = result.posts;
             isFromCache = false;
         }
-
     }
 
     function openModal() {

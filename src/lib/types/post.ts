@@ -14,5 +14,4 @@ export interface ICreatePost {
 
 export interface IPostResponse {
     posts: IPost[]
-    shouldLogout?: boolean
 }
