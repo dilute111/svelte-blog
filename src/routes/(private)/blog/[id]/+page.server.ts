@@ -4,8 +4,20 @@ export async function load({ params, fetch, depends }) {
     depends('app:auth')
 
     const { id } = params as { id: string }
-    const res = fetch(`/api/posts/${id}`)
+
+
+    const fetchPosts = async () => {
+        try {
+            const res = await fetch(`/api/posts/${id}`)
+            if (!res.ok) throw new Error('Post not found')
+            return await res.json()
+        } catch {
+            return null
+        }
+
+    }
+
     return {
-        post: res.then(r => r.json())
+        post: fetchPosts()
     } satisfies IBlogIdPageData
 }

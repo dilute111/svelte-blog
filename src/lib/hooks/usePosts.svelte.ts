@@ -8,35 +8,57 @@ export class PostsStore {
     postsDataOrCachedPosts = $state<IPost[] | null>(null);
     isFromCache = $state(false);
     isLoading = $state(true);
-    private data: IBlogPageData;
+    private postsPromise: Promise<{ posts: IPost[] }>;
 
-    constructor(data: IBlogPageData) {
-        this.data = data;
+    constructor(postsPromise: Promise<{ posts: IPost[] }>) {
+        this.postsPromise = postsPromise;
     }
 
-    private updatePosts = (result: IPostResponse) => {
+    private updatePosts = (result: IPostResponse, keepOptimistic?: boolean) => {
         if (result.posts.length > 0) {
             localStorage.setItem(CACHE_KEY, JSON.stringify(result.posts));
             this.postsDataOrCachedPosts = result.posts;
             this.isFromCache = false;
             this.isLoading = false;
-        } else {
+        } else if(!keepOptimistic) {
             this.loadFromCache();
         }
     };
 
-    loadPosts = async () => {
+    getPost = (id: number): IPost | null => {
+        // Сначала ищем в текущих данных
+        const post = this.postsDataOrCachedPosts?.find(p => p.id === id);
+        if (post) return post;
+
+        // Если нет - пробуем из кэша
+        const cached = localStorage.getItem(CACHE_KEY);
+        if (cached) {
+            try {
+                const parsed = JSON.parse(cached);
+                return parsed.find((p: IPost) => p.id === id) || null;
+            } catch {
+                return null;
+            }
+        }
+        return null;
+    };
+
+
+    loadPosts = async (keepOptimistic = false) => {
 
         try {
-            const result = await this.data.posts;
-            this.updatePosts(result);
+            const result = await this.postsPromise;
+            this.updatePosts(result, keepOptimistic);
         } catch {
-            this.loadFromCache();
+            if (keepOptimistic) {
+                this.isLoading = false;
+            } else {
+                this.loadFromCache();
+            }
         }
     };
 
     loadFromCache = () => {
-
         const cached = localStorage.getItem(CACHE_KEY);
 
         if (cached) {
@@ -55,13 +77,13 @@ export class PostsStore {
         this.isLoading = false;
     };
 
-    refreshPosts = async () => {
+    refreshPosts = async (keepOptimistic = false) => {
         await invalidate('app:auth');
         this.isLoading = true;
-        await this.loadPosts();
+        await this.loadPosts(keepOptimistic);
     };
 }
 
-export const usePostsSvelte = (data: IBlogPageData) => {
-    return new PostsStore(data);
+export const usePostsSvelte = (postsPromise: Promise<{ posts: IPost[] }>) => {
+    return new PostsStore(postsPromise);
 };

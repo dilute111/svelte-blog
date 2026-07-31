@@ -9,5 +9,5 @@ export interface IFormField {
 export interface IFormProps {
     fields: IFormField[]
     submitText?: string
-    onSubmit: (data: Record<string, string>) => Promise<void>
+    onSubmit: (data: Record<string, string>, result?: any) => Promise<void>
 }

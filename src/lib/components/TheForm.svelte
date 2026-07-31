@@ -47,7 +47,11 @@
             resetForm()
 
             if (onSubmit) {
-                await onSubmit(result)
+                const formDataObj: Record<string, string> = {}
+                fd.forEach((value, key) => {
+                    formDataObj[key] = value.toString()
+                })
+                await onSubmit(formDataObj, result)
             }
             await invalidate('app:auth');
 

@@ -11,14 +11,13 @@
 
     let isModalOpen = $state(false)
 
-    const posts = usePostsSvelte(data);
+    const posts = usePostsSvelte(data.posts);
     let isLoading = $derived(posts.isLoading);
     let postsData = $derived(posts.postsDataOrCachedPosts);
     let isFromCache = $derived(posts.isFromCache);
 
 
     onMount(async () => {
-
         let timeoutId: NodeJS.Timeout;
 
         // Макрозадача setTimeout ждет выполнения промиса ниже и подхватывает поток, если промис не получит свежих данных
@@ -31,15 +30,29 @@
         clearTimeout(timeoutId);
     })
 
-    async function handlePostCreated() {
+    async function handlePostCreated(formData: Record<string, string>) {
         isModalOpen = false
+        const newPost = {
+            id: Date.now(),
+            title: formData.title,
+            body: formData.body,
+            userId: 1,
+            createdAt: new Date().toISOString()
+        };
+
+        const currentPosts = posts.postsDataOrCachedPosts || [];
+        posts.postsDataOrCachedPosts = [...currentPosts, newPost];
+        localStorage.setItem('blog_posts', JSON.stringify(posts.postsDataOrCachedPosts));
+        let timeoutId: NodeJS.Timeout;
+
+        // Макрозадача setTimeout ждет выполнения промиса ниже и подхватывает поток, если промис не получит свежих данных
+        timeoutId = setTimeout(() => {
+            // Если через 3 секунды ответа нет - показываем кэш
+            posts.loadFromCache()
+
+        }, 3000);
         await posts.refreshPosts()
-        const result = await data.posts;
-        if (result.posts.length > 0) {
-            localStorage.setItem('blog_posts', JSON.stringify(result.posts));
-            postsData = result.posts;
-            isFromCache = false;
-        }
+        clearTimeout(timeoutId);
     }
 
     function openModal() {
