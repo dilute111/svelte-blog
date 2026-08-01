@@ -4,7 +4,7 @@
     import {onMount} from "svelte";
     import TheForm from "$lib/components/TheForm.svelte";
     import Modal from "$lib/components/Modal.svelte";
-    import type {IBlogPageData} from "$lib/types";
+    import type {IBlogPageData, IPost} from "$lib/types";
     import {usePostsSvelte} from "$lib/hooks/usePosts.svelte";
 
     let {data}: { data: IBlogPageData } = $props()
@@ -12,46 +12,41 @@
     let isModalOpen = $state(false)
 
     const posts = usePostsSvelte(data.posts);
-    let isLoading = $derived(posts.isLoading);
-    let postsData = $derived(posts.postsDataOrCachedPosts);
-    let isFromCache = $derived(posts.isFromCache);
 
+    let isLoading = $derived(posts.isLoading);
+    let postsData = $state<IPost[] | null>(null);
+    let isFromCache = $state(false);
+
+    $effect(() => {
+        postsData = posts.postsDataOrCachedPosts;
+        isFromCache = posts.isFromCache;
+    });
 
     onMount(async () => {
         let timeoutId: NodeJS.Timeout;
 
-        // Макрозадача setTimeout ждет выполнения промиса ниже и подхватывает поток, если промис не получит свежих данных
         timeoutId = setTimeout(() => {
-            // Если через 3 секунды ответа нет - показываем кэш
-           posts.loadFromCache()
-
+            posts.loadFromCache();
         }, 3000);
-        await posts.loadPosts()
+
+        await posts.loadPosts();
         clearTimeout(timeoutId);
-    })
+    });
 
     async function handlePostCreated(formData: Record<string, string>) {
-        isModalOpen = false
-        const newPost = {
-            id: Date.now(),
+        isModalOpen = false;
+
+        posts.addPostOptimistically({
             title: formData.title,
-            body: formData.body,
-            userId: 1,
-            createdAt: new Date().toISOString()
-        };
+            body: formData.body
+        });
 
-        const currentPosts = posts.postsDataOrCachedPosts || [];
-        posts.postsDataOrCachedPosts = [...currentPosts, newPost];
-        localStorage.setItem('blog_posts', JSON.stringify(posts.postsDataOrCachedPosts));
         let timeoutId: NodeJS.Timeout;
-
-        // Макрозадача setTimeout ждет выполнения промиса ниже и подхватывает поток, если промис не получит свежих данных
         timeoutId = setTimeout(() => {
-            // Если через 3 секунды ответа нет - показываем кэш
-            posts.loadFromCache()
-
+            posts.loadFromCache();
         }, 3000);
-        await posts.refreshPosts()
+
+        await posts.refreshPosts(true);
         clearTimeout(timeoutId);
     }
 

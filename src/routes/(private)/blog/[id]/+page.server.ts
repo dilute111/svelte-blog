@@ -5,8 +5,7 @@ export async function load({ params, fetch, depends }) {
 
     const { id } = params as { id: string }
 
-
-    const fetchPosts = async () => {
+    const fetchPost = async () => {
         try {
             const res = await fetch(`/api/posts/${id}`)
             if (!res.ok) throw new Error('Post not found')
@@ -14,10 +13,20 @@ export async function load({ params, fetch, depends }) {
         } catch {
             return null
         }
+    }
 
+    const fetchPosts = async () => {
+        try {
+            const res = await fetch('/api/posts')
+            if (!res.ok) throw new Error('Posts not found')
+            return await res.json()
+        } catch {
+            return { posts: [] }
+        }
     }
 
     return {
-        post: fetchPosts()
+        post: fetchPost(),
+        postsPromise: fetchPosts()
     } satisfies IBlogIdPageData
 }
