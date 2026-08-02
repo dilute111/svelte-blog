@@ -46,6 +46,7 @@
             if (result) {
                 post = result;
                 isLoading = false;
+                resolved = true
                 return;
             }
         } catch {
@@ -61,11 +62,13 @@
         if (found) {
             post = found;
             isLoading = false;
+            resolved = true
             return;
         }
         post = null;
         error = 'Пост не найден';
         isLoading = false;
+        resolved = true
     });
 </script>
 
