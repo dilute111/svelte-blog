@@ -1,8 +1,7 @@
 // usePosts.svelte.ts
 import type { IPost, IPostResponse } from "$lib/types";
 import { invalidate } from "$app/navigation";
-
-const CACHE_KEY = 'blog_posts';
+import {cacheService} from "$lib/services/cacheService";
 
 export class PostsStore {
     postsDataOrCachedPosts = $state<IPost[] | null>(null);
@@ -23,7 +22,7 @@ export class PostsStore {
 
         this.postsDataOrCachedPosts = [...currentPosts, newPost];
 
-        localStorage.setItem(CACHE_KEY, JSON.stringify(this.postsDataOrCachedPosts));
+        cacheService.setPosts(this.postsDataOrCachedPosts)
 
         return newPost;
     };
@@ -34,14 +33,14 @@ export class PostsStore {
 
     private updatePosts = (result: IPostResponse, keepOptimistic?: boolean) => {
         if (result.posts.length > 0) {
-            localStorage.setItem(CACHE_KEY, JSON.stringify(result.posts));
+            cacheService.setPosts(result.posts)
 
             if (keepOptimistic && this.postsDataOrCachedPosts && this.postsDataOrCachedPosts.length > 0) {
                 if (result.posts.length > this.postsDataOrCachedPosts.length) {
                     this.postsDataOrCachedPosts = result.posts;
                 } else {
                     // Сохраняем оптимистичные данные в localStorage
-                    localStorage.setItem(CACHE_KEY, JSON.stringify(this.postsDataOrCachedPosts));
+                    cacheService.setPosts(this.postsDataOrCachedPosts)
                     this.isLoading = false;
                     return;
                 }
@@ -60,16 +59,7 @@ export class PostsStore {
         const post = this.postsDataOrCachedPosts?.find(p => p.id === id);
         if (post) return post;
 
-        const cached = localStorage.getItem(CACHE_KEY);
-        if (cached) {
-            try {
-                const parsed = JSON.parse(cached);
-                return parsed.find((p: IPost) => p.id === id) || null;
-            } catch {
-                return null;
-            }
-        }
-        return null;
+        return cacheService.getPost(id);
     };
 
     loadPosts = async (keepOptimistic = false) => {
@@ -86,11 +76,10 @@ export class PostsStore {
     };
 
     loadFromCache = () => {
-        const cached = localStorage.getItem(CACHE_KEY);
+        const parsed = cacheService.getPosts()
 
-        if (cached) {
+        if (parsed) {
             try {
-                const parsed = JSON.parse(cached);
                 this.postsDataOrCachedPosts = parsed;
                 this.isFromCache = true;
             } catch {

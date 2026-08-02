@@ -1,10 +1,11 @@
 <script lang="ts">
-    import { onMount } from "svelte";
+    import {onMount} from "svelte";
     import Loader from "$lib/components/Loader.svelte";
-    import type { IBlogIdPageData, IPost } from "$lib/types";
-    import { usePostsSvelte } from "$lib/hooks/usePosts.svelte";
+    import type {IBlogIdPageData, IPost} from "$lib/types";
+    import {usePostsSvelte} from "$lib/hooks/usePosts.svelte";
+    import PostDetail from "$lib/components/PostDetail.svelte";
 
-    let { data }: { data: IBlogIdPageData } = $props();
+    let {data}: { data: IBlogIdPageData } = $props();
 
     let post = $state<IPost | null>(null);
     let isLoading = $state(true);
@@ -15,8 +16,33 @@
     onMount(async () => {
         const id = Number(window.location.pathname.split('/').pop());
 
+        let timeoutId: NodeJS.Timeout;
+        let resolved = false
+
+        timeoutId = setTimeout(() => {
+            if (resolved) return;
+
+            postsStore.loadPosts().then(() => {
+                if (resolved) return;
+
+                const found = postsStore.getPost(id);
+                if (found) {
+                    post = found;
+                    isLoading = false;
+                    resolved = true;
+                    return;
+                }
+                error = 'Пост не найден (таймаут)';
+                isLoading = false;
+                resolved = true;
+            });
+        }, 3000);
+
+
         try {
             const result = await data.post;
+            clearTimeout(timeoutId);
+
             if (result) {
                 post = result;
                 isLoading = false;
@@ -26,15 +52,17 @@
             // Data post error
         }
 
-        await postsStore.loadPosts();
+        if (resolved) return;
+        clearTimeout(timeoutId);
 
+        await postsStore.loadPosts();
+        clearTimeout(timeoutId);
         const found = postsStore.getPost(id);
         if (found) {
             post = found;
             isLoading = false;
             return;
         }
-
         post = null;
         error = 'Пост не найден';
         isLoading = false;
@@ -43,7 +71,7 @@
 
 <svelte:head>
     {#if post }
-    	<title>{post.title} | SvelteKit</title>
+        <title>{post.title} | SvelteKit</title>
     {:else if error}
         <title>{error} | SvelteKit</title>
     {:else}
@@ -55,11 +83,6 @@
 
 {#if isLoading}
     <Loader/>
-{:else if post}
-    <h1>{post.title}</h1>
-    <p>{post.body}</p>
-{:else if error}
-    <p style="color: red;">{error}</p>
 {:else}
-    <p>Пост не найден</p>
+    <PostDetail post={post} error={error}/>
 {/if}

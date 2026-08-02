@@ -6,6 +6,7 @@
     import Modal from "$lib/components/Modal.svelte";
     import type {IBlogPageData, IPost} from "$lib/types";
     import {usePostsSvelte} from "$lib/hooks/usePosts.svelte";
+    import PostList from "$lib/components/PostList.svelte";
 
     let {data}: { data: IBlogPageData } = $props()
 
@@ -42,12 +43,29 @@
         });
 
         let timeoutId: NodeJS.Timeout;
+        let timeoutFired = false;
+
         timeoutId = setTimeout(() => {
+            timeoutFired = true;
             posts.loadFromCache();
         }, 3000);
 
-        await posts.refreshPosts(true);
-        clearTimeout(timeoutId);
+        try {
+            // Заворачиваем refreshPosts в Promise.race с таймаутом
+            await Promise.race([
+                posts.refreshPosts(true),
+                new Promise((_, reject) =>
+                    setTimeout(() => reject(new Error('Timeout')), 5000)
+                )
+            ]);
+        } catch {
+            // Если таймаут или ошибка - показываем кэш
+            if (!timeoutFired) {
+                posts.loadFromCache();
+            }
+        } finally {
+            clearTimeout(timeoutId);
+        }
     }
 
     function openModal() {
@@ -66,7 +84,7 @@
 
 <div class="blog-header">
     <h1>Blog</h1>
-    <button class="create-post-btn" on:click={openModal}>
+    <button disabled={isLoading} class="create-post-btn" on:click={openModal}>
         + Создать пост
     </button>
 </div>
@@ -86,23 +104,8 @@
 
 {#if isLoading || postsData === null}
     <Loader/>
-{:else if postsData.length === 0}
-    <p style="text-align: center; color: var(--text-muted);">
-        Нет постов
-    </p>
 {:else}
-    <ul class="posts-list">
-        {#each postsData as post (post.id)}
-            <li>
-                <a href={`/blog/${post.id}`}>{post.title}</a>
-            </li>
-        {/each}
-    </ul>
-    {#if isFromCache}
-        <p style="color: orange; text-align: center;">
-            Данные из кэша (ошибка подключения к серверу)
-        </p>
-    {/if}
+    <PostList posts={postsData} isFromCache={isFromCache}/>
 {/if}
 
 <style>
@@ -136,42 +139,11 @@
         transform: scale(0.95);
     }
 
-    .posts-list {
-        list-style: none;
-        padding: 0;
-    }
-
-    .posts-list li {
-        margin-bottom: 0.5rem;
-        padding: 0.5rem 0;
-        border-bottom: 1px solid var(--border);
-    }
-
-    .posts-list li:last-child {
-        border-bottom: none;
-    }
-
-    .posts-list a {
-        text-decoration: none;
-        color: var(--text-color);
-        transition: color 0.2s;
-    }
-
-    .posts-list a:hover {
-        color: var(--primary-color);
-    }
-
-    .empty-state {
-        text-align: center;
-        color: var(--text-muted);
-        padding: 3rem 0;
-    }
-
-    .error-text {
-        color: #dc2626;
-        padding: 1rem;
-        background: #fef2f2;
-        border-radius: var(--border-radius, 8px);
+    .create-post-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        background: var(--border, #e5e7eb);
+        color: var(--text-muted, #6b7280);
     }
 
     /* Стили для заголовка в модалке */
