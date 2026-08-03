@@ -4,7 +4,7 @@
     let isVisible = $state(false)
     let timeoutId: NodeJS.Timeout
 
-    export function show(msg: string, t: typeof t = 'success',) {
+    export function show(msg: string, t: typeof type = 'success',) {
         message = msg
         type = t
         isVisible = true
