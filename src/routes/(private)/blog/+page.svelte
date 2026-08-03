@@ -4,9 +4,10 @@
     import {onMount} from "svelte";
     import TheForm from "$lib/components/TheForm.svelte";
     import Modal from "$lib/components/Modal.svelte";
-    import type {IBlogPageData, IPost} from "$lib/types";
+    import type {IBlogPageData} from "$lib/types";
     import {usePostsSvelte} from "$lib/hooks/usePosts.svelte";
     import PostList from "$lib/components/PostList.svelte";
+    import Notification from "$lib/components/Notification.svelte";
 
     let {data}: { data: IBlogPageData } = $props()
 
@@ -15,13 +16,8 @@
     const posts = usePostsSvelte(data.posts);
 
     let isLoading = $derived(posts.isLoading);
-    let postsData = $state<IPost[] | null>(null);
-    let isFromCache = $state(false);
-
-    $effect(() => {
-        postsData = posts.postsDataOrCachedPosts;
-        isFromCache = posts.isFromCache;
-    });
+    let postsData = $derived(posts.postsDataOrCachedPosts);
+    let isFromCache = $derived(posts.isFromCache);
 
     onMount(async () => {
         let timeoutId: NodeJS.Timeout;
@@ -34,6 +30,9 @@
         clearTimeout(timeoutId);
     });
 
+    let notificationRef: { show: (msg: string, type: string) => void };
+
+
     async function handlePostCreated(formData: Record<string, string>) {
         isModalOpen = false;
 
@@ -42,12 +41,15 @@
             body: formData.body
         });
 
+        notificationRef?.show('Пост создается...', 'info')
+
         let timeoutId: NodeJS.Timeout;
         let timeoutFired = false;
 
         timeoutId = setTimeout(() => {
             timeoutFired = true;
             posts.loadFromCache();
+            notificationRef?.show('Данные из кэша (сервер не отвечает)', 'info');
         }, 3000);
 
         try {
@@ -58,9 +60,11 @@
                     setTimeout(() => reject(new Error('Timeout')), 5000)
                 )
             ]);
+            notificationRef?.show('Пост успешно создан!', 'success')
         } catch {
             // Если таймаут или ошибка - показываем кэш
             if (!timeoutFired) {
+                notificationRef?.show('Ошибка при создании поста', 'error')
                 posts.loadFromCache();
             }
         } finally {
@@ -81,6 +85,8 @@
 <svelte:head>
     <title>Blog page | SvelteKit</title>
 </svelte:head>
+
+<Notification bind:this={notificationRef} />
 
 <div class="blog-header">
     <h1>Blog</h1>
