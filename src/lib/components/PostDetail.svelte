@@ -1,54 +1,49 @@
 <script lang="ts">
-    import type {IPost} from "$lib/types";
+    import type {IPostProps} from "$lib/types";
 
     let {
         post,
         error,
         isEditing = false,
+        editTitle = '',
+        editBody = '',
+        onTitleChange,
+        onBodyChange,
         onSave,
         onCancel,
         onEdit
-    }: {
-        post: IPost | null;
-        error: string | null
-        isEditing?: boolean;
-        onSave?: (data: { title: string; body: string }) => void;
-        onCancel?: () => void;
-        onEdit?: () => void;
-    } = $props();
+    }: IPostProps = $props();
 
-    let editTitle = $state(post?.title || '');
-    let editBody = $state(post?.body || '');
-
-    let isEditMode = $derived(isEditing);
-
-    $effect(() => {
-        if (post) {
-            editTitle = post.title;
-            editBody = post.body;
-        }
-    });
 </script>
 
 {#if post}
     <article class="post-detail">
         <div class="post-card">
-            {#if isEditMode}
-                <input bind:value={editTitle}/>
-                <textarea bind:value={editBody} rows={10}/>
-                <button on:click={() => onSave?.({ title: editTitle, body: editBody })}>Сохранить</button>
-                <button on:click={onCancel}>Отмена</button>
+            {#if isEditing}
+                <input
+                        value={editTitle}
+                        oninput={(e) => onTitleChange?.(e.currentTarget.value)}
+                        placeholder="Заголовок"
+                />
+                <textarea
+                        value={editBody}
+                        oninput={(e) => onBodyChange?.(e.currentTarget.value)}
+                        rows={10}
+                        placeholder="Текст поста"
+                />
+                <button onclick={() => onSave?.()}>Сохранить</button>
+                <button onclick={onCancel}>Отмена</button>
             {:else}
                 <h1>{post.title}</h1>
                 <div class="post-body">
                     <p>{post.body}</p>
-                    <button on:click={onEdit}>Редактировать</button>
                 </div>
+                <button onclick={onEdit}>Редактировать</button>
             {/if}
         </div>
     </article>
 {:else if error}
-    <p style="color: red;" class="error">{error}</p>
+    <p class="error">{error}</p>
 {:else}
     <p class="not-found">Пост не найден</p>
 {/if}

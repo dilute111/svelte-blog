@@ -20,3 +20,16 @@ export interface IUpdatePostData {
      title?: string;
      body?: string
 }
+
+export interface IPostProps {
+    post: IPost | null;
+    error: string | null
+    isEditing?: boolean;
+    editTitle: string
+    editBody: string
+    onTitleChange: (value: string) => void
+    onBodyChange: (value: string) => void
+    onSave?: () => void;
+    onCancel?: () => void;
+    onEdit?: () => void;
+}

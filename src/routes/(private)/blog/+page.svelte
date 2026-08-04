@@ -20,6 +20,18 @@
     let isFromCache = $derived(posts.isFromCache);
 
     onMount(async () => {
+        // Костыль для показа уведомлений после перезагрузки страницы
+        // (Без перезагрузки нет данных о текущем реальном посте и отображается закешированный по дефолту)
+        const saved = sessionStorage.getItem('notification');
+        if (saved) {
+            try {
+                const {message, type} = JSON.parse(saved);
+                notificationRef?.show(message, type);
+                sessionStorage.removeItem('notification');
+            } catch {
+                // ignore
+            }
+        }
         let timeoutId: NodeJS.Timeout;
 
         timeoutId = setTimeout(() => {
@@ -31,7 +43,6 @@
     });
 
     let notificationRef: { show: (msg: string, type: string) => void };
-
 
     async function handlePostCreated(formData: Record<string, string>) {
         isModalOpen = false;
@@ -49,7 +60,11 @@
         timeoutId = setTimeout(() => {
             timeoutFired = true;
             posts.loadFromCache();
-            notificationRef?.show('Данные из кэша (сервер не отвечает)', 'info');
+            sessionStorage.setItem('notification', JSON.stringify({
+                message: 'Данные из кэша (сервер не отвечает)',
+                type: 'info'
+            }));
+            window.location.reload();
         }, 3000);
 
         try {
@@ -60,13 +75,19 @@
                     setTimeout(() => reject(new Error('Timeout')), 5000)
                 )
             ]);
-
-            notificationRef?.show('Пост успешно создан!', 'success')
-            window.location.href = '/blog';
+            sessionStorage.setItem('notification', JSON.stringify({
+                message: 'Пост успешно создан!',
+                type: 'success'
+            }));
+            window.location.reload();
         } catch {
             // Если таймаут или ошибка - показываем кэш
             if (!timeoutFired) {
-                notificationRef?.show('Ошибка при создании поста', 'error')
+                sessionStorage.setItem('notification', JSON.stringify({
+                    message: 'Ошибка при создании поста',
+                    type: 'error'
+                }));
+                window.location.reload();
                 posts.loadFromCache();
             }
         } finally {

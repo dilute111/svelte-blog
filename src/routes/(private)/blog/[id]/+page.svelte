@@ -4,6 +4,7 @@
     import type {IBlogIdPageData, IPost} from "$lib/types";
     import {usePostsSvelte} from "$lib/hooks/usePosts.svelte";
     import PostDetail from "$lib/components/PostDetail.svelte";
+    import {goto, invalidate} from "$app/navigation";
 
     let {data}: { data: IBlogIdPageData } = $props();
 
@@ -11,9 +12,18 @@
     let isLoading = $state(true);
     let error = $state<string | null>(null);
     let isEditing = $state(false);
+    let editTitle = $state('');
+    let editBody = $state('');
     let notificationRef: { show: (msg: string, type: string) => void };
 
     const postsStore = usePostsSvelte(data.postsPromise);
+
+    $effect(() => {
+        if (post) {
+            editTitle = post.title;
+            editBody = post.body;
+        }
+    });
 
     onMount(async () => {
         const id = Number(window.location.pathname.split('/').pop());
@@ -73,7 +83,8 @@
 
     });
 
-    async function handleSavePost(data: { title: string; body: string }) {
+    async function handleSavePost() {
+        const data = { title: editTitle, body: editBody };
         const id = Number(window.location.pathname.split('/').pop());
 
         // 1. Оптимистичное обновление
@@ -154,6 +165,10 @@
     <PostDetail post={post}
                 error={error}
                 isEditing={isEditing}
+                editTitle={editTitle}
+                editBody={editBody}
+                onTitleChange={(v) => editTitle = v}
+                onBodyChange={(v) => editBody = v}
                 onSave={handleSavePost}
                 onCancel={handleCancel}
                 onEdit={() => isEditing = true}
