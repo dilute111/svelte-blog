@@ -1,16 +1,50 @@
 <script lang="ts">
     import type {IPost} from "$lib/types";
 
-    let {post, error}: { post: IPost | null; error: string | null } = $props();
+    let {
+        post,
+        error,
+        isEditing = false,
+        onSave,
+        onCancel,
+        onEdit
+    }: {
+        post: IPost | null;
+        error: string | null
+        isEditing?: boolean;
+        onSave?: (data: { title: string; body: string }) => void;
+        onCancel?: () => void;
+        onEdit?: () => void;
+    } = $props();
+
+    let editTitle = $state(post?.title || '');
+    let editBody = $state(post?.body || '');
+
+    let isEditMode = $derived(isEditing);
+
+    $effect(() => {
+        if (post) {
+            editTitle = post.title;
+            editBody = post.body;
+        }
+    });
 </script>
 
 {#if post}
     <article class="post-detail">
         <div class="post-card">
-            <h1>{post.title}</h1>
-            <div class="post-body">
-                <p>{post.body}</p>
-            </div>
+            {#if isEditMode}
+                <input bind:value={editTitle}/>
+                <textarea bind:value={editBody} rows={10}/>
+                <button on:click={() => onSave?.({ title: editTitle, body: editBody })}>Сохранить</button>
+                <button on:click={onCancel}>Отмена</button>
+            {:else}
+                <h1>{post.title}</h1>
+                <div class="post-body">
+                    <p>{post.body}</p>
+                    <button on:click={onEdit}>Редактировать</button>
+                </div>
+            {/if}
         </div>
     </article>
 {:else if error}
@@ -63,4 +97,25 @@
         text-align: center;
         padding: 2rem 0;
     }
+
+    input, textarea {
+        width: 100%;
+        padding: 0.5rem;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
+    }
+
+    button {
+        padding: 0.4rem 1rem;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        background: var(--primary-color);
+        color: white;
+        margin-right: 0.5rem;
+    }
+
+    button:hover { background: var(--primary-hover); }
 </style>

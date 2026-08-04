@@ -60,7 +60,9 @@
                     setTimeout(() => reject(new Error('Timeout')), 5000)
                 )
             ]);
+
             notificationRef?.show('Пост успешно создан!', 'success')
+            window.location.href = '/blog';
         } catch {
             // Если таймаут или ошибка - показываем кэш
             if (!timeoutFired) {

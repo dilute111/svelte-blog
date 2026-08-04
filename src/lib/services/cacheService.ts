@@ -13,7 +13,7 @@ export const cacheService = {
     },
 
     setPosts(posts: IPost[]): void {
-            localStorage.setItem(CACHE_KEY, JSON.stringify(posts));
+        localStorage.setItem(CACHE_KEY, JSON.stringify(posts));
     },
 
     getPost(id: number): IPost | null {

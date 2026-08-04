@@ -10,6 +10,8 @@
     let post = $state<IPost | null>(null);
     let isLoading = $state(true);
     let error = $state<string | null>(null);
+    let isEditing = $state(false);
+    let notificationRef: { show: (msg: string, type: string) => void };
 
     const postsStore = usePostsSvelte(data.postsPromise);
 
@@ -37,7 +39,6 @@
                 resolved = true;
             });
         }, 3000);
-
 
         try {
             const result = await data.post;
@@ -69,7 +70,70 @@
         error = 'Пост не найден';
         isLoading = false;
         resolved = true
+
     });
+
+    async function handleSavePost(data: { title: string; body: string }) {
+        const id = Number(window.location.pathname.split('/').pop());
+
+        // 1. Оптимистичное обновление
+        const updatedPost = postsStore.updatePostOptimistically(id, data);
+        if (updatedPost) {
+            post = updatedPost;  // ← сразу обновляем локальный post
+        }
+
+        notificationRef?.show('Обновляем пост...', 'info');
+
+        let timeoutId: NodeJS.Timeout;
+        let timeoutFired = false;
+
+        // 2. Таймаут 3 секунды
+        timeoutId = setTimeout(() => {
+            timeoutFired = true;
+            postsStore.loadFromCache();
+            notificationRef?.show('Данные из кэша (сервер не отвечает)', 'info');
+        }, 3000);
+
+        try {
+            // 3. Promise.race с таймаутом 5 секунд
+            const result = await Promise.race([
+                postsStore.updatePostOnServer(id, data),
+                new Promise((_, reject) =>
+                    setTimeout(() => reject(new Error('Timeout')), 5000)
+                )
+            ]);
+
+            if (result) {
+                post = result;
+            }
+            notificationRef?.show('Пост обновлён!', 'success');
+            isEditing = false;
+        } catch {
+            if (!timeoutFired) {
+                notificationRef?.show('Ошибка при обновлении поста', 'error');
+                postsStore.loadFromCache();
+                // Обновление post из кэша при ошибке
+                const cached = postsStore.getPost(id);
+                if (cached) {
+                    post = cached;
+                }
+            }
+        } finally {
+            clearTimeout(timeoutId);
+        }
+    }
+
+    function handleCancel() {
+        isEditing = false;
+        // Возвращаем исходный пост из кэша
+        if (post) {
+            const cached = postsStore.getPost(post.id);
+            if (cached) {
+                post = cached;
+            }
+        }
+
+    }
 </script>
 
 <svelte:head>
@@ -87,5 +151,11 @@
 {#if isLoading}
     <Loader/>
 {:else}
-    <PostDetail post={post} error={error}/>
+    <PostDetail post={post}
+                error={error}
+                isEditing={isEditing}
+                onSave={handleSavePost}
+                onCancel={handleCancel}
+                onEdit={() => isEditing = true}
+    />
 {/if}

@@ -15,3 +15,8 @@ export interface ICreatePost {
 export interface IPostResponse {
     posts: IPost[]
 }
+
+export interface IUpdatePostData {
+     title?: string;
+     body?: string
+}

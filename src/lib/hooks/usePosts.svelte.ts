@@ -27,6 +27,36 @@ export class PostsStore {
         return newPost;
     };
 
+    updatePostOptimistically = (id: number, data: { title?: string; body?: string }) => {
+        const currentPosts = this.postsDataOrCachedPosts || []
+        const index = currentPosts.findIndex(p => p.id === id)
+        if (index === -1) return null
+
+        const updatedPost = { ...currentPosts[index], ...data }
+        const newPosts = [...currentPosts]
+        newPosts[index] = updatedPost
+
+        this.postsDataOrCachedPosts = newPosts
+        cacheService.setPosts(newPosts)
+
+        return updatedPost
+    }
+
+    updatePostOnServer = async (id: number, data: { title: string; body: string }) => {
+        const res = await fetch(`/api/posts/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        })
+
+        if (!res.ok) {
+            const err = await res.json()
+            throw new Error(err.message || 'Failed to update post')
+        }
+
+        return await res.json()
+    }
+
     constructor(postsPromise: Promise<{ posts: IPost[] }>) {
         this.postsPromise = postsPromise;
     }
@@ -53,7 +83,6 @@ export class PostsStore {
             this.loadFromCache();
         }
     };
-
 
     getPost = (id: number): IPost | null => {
         const post = this.postsDataOrCachedPosts?.find(p => p.id === id);

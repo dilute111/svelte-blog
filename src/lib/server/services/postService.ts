@@ -1,9 +1,8 @@
 import {error} from "@sveltejs/kit";
 import * as postRepo from '$lib/server/repo/postRepo'
-import type {FetchFunction, ICreatePost, IPost} from "$lib/types";
+import type {FetchFunction, ICreatePost, IPost, IUpdatePostData} from "$lib/types";
 import {browser} from "$app/environment";
-
-const CACHE_KEY = 'blog_posts'
+import {cacheService} from "$lib/services/cacheService";
 
 export async function getPosts(fetch: FetchFunction): Promise<IPost[]> {
     try {
@@ -16,7 +15,7 @@ export async function getPosts(fetch: FetchFunction): Promise<IPost[]> {
         // Сохраняем в кэш
         if (browser) {
             try {
-                localStorage.setItem(CACHE_KEY, JSON.stringify(data))
+                cacheService.setPosts(data)
             } catch {
                 // localStorage unavailable
             }
@@ -27,10 +26,9 @@ export async function getPosts(fetch: FetchFunction): Promise<IPost[]> {
         console.log('API упал:', err);
         if (browser) {
             try {
-                const cached = localStorage.getItem(CACHE_KEY);
+                const cached = cacheService.getPosts();
                 if (cached) {
-                    const data = JSON.parse(cached);
-                    postRepo.initPosts(data);
+                    postRepo.initPosts(cached);
                     return postRepo.getPosts();
                 }
             } catch {
@@ -55,4 +53,10 @@ export async function getPost(id: string, fetch: FetchFunction): Promise<IPost> 
 
 export async function createPost(data: ICreatePost): Promise<IPost> {
     return postRepo.createPost(data)
+}
+
+export async function updatePost( id: number, data: IUpdatePostData ): Promise<IPost> {
+    const updated = postRepo.updatePost(id, data)
+    if (!updated) error(404, 'Post not found')
+    return updated
 }
