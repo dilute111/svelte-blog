@@ -34,3 +34,10 @@ export function updatePost( id: number, data: IUpdatePostData ): IPost | null {
     posts[index] = updated
     return updated
 }
+
+export function deletePost(id: number): boolean {
+    const index = posts.findIndex(p => p.id === id)
+    if (index === -1) return false
+    posts.splice(index, 1)
+    return true
+}

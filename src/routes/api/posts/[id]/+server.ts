@@ -1,4 +1,4 @@
-import {getPost, updatePost} from "$lib/server/services/postService";
+import {deletePost, getPost, updatePost} from "$lib/server/services/postService";
 import {error, json} from "@sveltejs/kit";
 import type {IPost, IUpdatePostData} from "$lib/types";
 import {requireAuth} from "$lib/server/middleware/auth";
@@ -25,4 +25,11 @@ export async function PUT({ params, request, locals }){
 
     const updated = await updatePost(Number(id), data)
     return json(updated)
+}
+
+export async function DELETE({ params, locals }){
+    requireAuth(locals)
+    const { id } = params
+    await deletePost(Number(id))
+    return json({ success: true })
 }

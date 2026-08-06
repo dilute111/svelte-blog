@@ -60,3 +60,9 @@ export async function updatePost( id: number, data: IUpdatePostData ): Promise<I
     if (!updated) error(404, 'Post not found')
     return updated
 }
+
+export async function deletePost( id: number ): Promise<void> {
+    const deleted = postRepo.deletePost(id)
+    if (!deleted) error(404, 'Post not found')
+    return
+}
