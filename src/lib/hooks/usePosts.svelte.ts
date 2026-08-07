@@ -61,6 +61,26 @@ export class PostsStore {
         this.postsPromise = postsPromise;
     }
 
+    deletePostOptimistically = (id: number) => {
+        const currentPosts = this.postsDataOrCachedPosts || []
+        const filteredPosts = currentPosts.filter(p => p.id !== id)
+
+        this.postsDataOrCachedPosts = filteredPosts
+        cacheService.setPosts(filteredPosts)
+    }
+
+    deletePostOnServer = async (id: number) => {
+        const res = await fetch(`/api/posts/${id}`, {
+            method: 'DELETE'
+        })
+
+        if (!res.ok) {
+            const err = await res.json()
+            throw new Error(err.message || 'Failed to delete post')
+        }
+        return true
+    }
+
     private updatePosts = (result: IPostResponse, keepOptimistic?: boolean) => {
         if (result.posts.length > 0) {
             cacheService.setPosts(result.posts)

@@ -4,7 +4,6 @@
     import type {IBlogIdPageData, IPost} from "$lib/types";
     import {usePostsSvelte} from "$lib/hooks/usePosts.svelte";
     import PostDetail from "$lib/components/PostDetail.svelte";
-    import {goto, invalidate} from "$app/navigation";
 
     let {data}: { data: IBlogIdPageData } = $props();
 

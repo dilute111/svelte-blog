@@ -1,7 +1,7 @@
 <script lang="ts">
-    import type { IPost } from "$lib/types";
+    import type {IPostListProps} from "$lib/types";
 
-    let { posts, isFromCache }: { posts: IPost[]; isFromCache: boolean } = $props();
+    let {posts, isFromCache, onDelete}: IPostListProps = $props();
 </script>
 
 
@@ -14,6 +14,11 @@
         {#each posts as post (post.id)}
             <li>
                 <a href={`/blog/${post.id}`}>{post.title}</a>
+                <button class="btn-delete"
+                        onclick={() => onDelete?.(post.id)}
+                        title="Удалить пост">
+                    Удалить пост 🗑️
+                </button>
             </li>
         {/each}
     </ul>
@@ -49,6 +54,23 @@
 
     .posts-list a:hover {
         color: var(--primary-color);
+    }
+
+    .btn-delete {
+        padding: 0.2rem 0.6rem;
+        background: transparent;
+        color: #ef4444;
+        border: 1px solid #ef4444;
+        border-radius: var(--border-radius, 6px);
+        cursor: pointer;
+        font-size: 0.9rem;
+        transition: all 0.2s;
+        flex-shrink: 0;
+    }
+
+    .btn-delete:hover {
+        background: #ef4444;
+        color: white;
     }
 
 </style>

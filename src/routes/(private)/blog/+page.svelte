@@ -8,6 +8,7 @@
     import {usePostsSvelte} from "$lib/hooks/usePosts.svelte";
     import PostList from "$lib/components/PostList.svelte";
     import Notification from "$lib/components/Notification.svelte";
+    import {goto} from "$app/navigation";
 
     let {data}: { data: IBlogPageData } = $props()
 
@@ -95,6 +96,44 @@
         }
     }
 
+    async function handleDeletePost(id: number) {
+        // 1. Подтверждение удаления
+        if (!confirm('Вы уверены, что хотите удалить этот пост?')) {
+            return
+        }
+        // 2. Оптимистичное удаление
+        posts.deletePostOptimistically(id)
+        notificationRef?.show('Пост удаляется...', 'info')
+
+        let timeoutId: NodeJS.Timeout;
+        let timeoutFired = false;
+
+        timeoutId = setTimeout(() => {
+            timeoutFired = true
+            posts.loadFromCache()
+            notificationRef?.show('Данные из кэша (сервер не отвечает)', 'info')
+        }, 3000)
+
+        try {
+            // 3. Promise.race с таймаутом 5 секунд
+            await Promise.race([
+                posts.deletePostOnServer(id),
+                new Promise((_, reject) =>
+                    setTimeout(() => reject(new Error('Timeout')), 5000)
+                )
+            ])
+            notificationRef?.show('Пост удалён!', 'success')
+        } catch {
+            if (!timeoutFired) {
+                notificationRef?.show('Ошибка при удалении поста', 'error')
+                await posts.loadFromCache()
+            }
+        } finally {
+            clearTimeout(timeoutId)
+            goto('/blog')
+        }
+    }
+
     function openModal() {
         isModalOpen = true
     }
@@ -134,7 +173,7 @@
 {#if isLoading || postsData === null}
     <Loader/>
 {:else}
-    <PostList posts={postsData} isFromCache={isFromCache}/>
+    <PostList posts={postsData} isFromCache={isFromCache} onDelete={handleDeletePost}/>
 {/if}
 
 <style>

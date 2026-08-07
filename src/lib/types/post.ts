@@ -33,3 +33,9 @@ export interface IPostProps {
     onCancel?: () => void;
     onEdit?: () => void;
 }
+
+export interface IPostListProps {
+    posts: IPost[]
+    isFromCache: boolean
+    onDelete: (id: number) => void
+}
