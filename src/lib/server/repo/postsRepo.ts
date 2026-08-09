@@ -4,6 +4,12 @@ let posts: IPost[] = []
 let nextId = 1
 let initialized = false
 
+export function resetRepo() {
+    posts = []
+    nextId = 1
+    initialized = false
+}
+
 export function initPosts(data: IPost[]) {
     if (!initialized) {
         posts = data.map(p => ({...p}))

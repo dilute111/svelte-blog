@@ -1,5 +1,5 @@
 import {error} from "@sveltejs/kit";
-import * as postRepo from '$lib/server/repo/postRepo'
+import * as postRepo from '$lib/server/repo/postsRepo'
 import type {FetchFunction, ICreatePost, IPost, IUpdatePostData} from "$lib/types";
 import {browser} from "$app/environment";
 import {cacheService} from "$lib/services/cacheService";

@@ -12,8 +12,6 @@
 
     let formElement: HTMLFormElement | undefined = $state()
 
-
-
     function handleInput(name: string, value: string) {
         formData[name] = value
     }
