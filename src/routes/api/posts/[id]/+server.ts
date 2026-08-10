@@ -1,4 +1,4 @@
-import {deletePost, getPost, updatePost} from "$lib/server/services/postService";
+import {deletePost, getPost, updatePost} from "$lib/server/services/postsService";
 import {error, json} from "@sveltejs/kit";
 import type {IPost, IUpdatePostData} from "$lib/types";
 import {requireAuth} from "$lib/server/middleware/auth";

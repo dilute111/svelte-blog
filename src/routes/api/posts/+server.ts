@@ -1,4 +1,4 @@
-import {createPost, getPosts} from "$lib/server/services/postService";
+import {createPost, getPosts} from "$lib/server/services/postsService";
 import {error, json} from "@sveltejs/kit";
 import {requireAuth} from "$lib/server/middleware/auth";
 import type {ICreatePost, IPost} from "$lib/types";

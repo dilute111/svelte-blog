@@ -1,6 +1,6 @@
 import {beforeEach, describe, expect, it, vi} from "vitest";
 import * as postRepo from "$lib/server/repo/postsRepo";
-import {createPost, deletePost, getPost, getPosts, updatePost} from "$lib/server/services/postService";
+import {createPost, deletePost, getPost, getPosts, updatePost} from "$lib/server/services/postsService";
 
 // Мокаем репозиторий
 vi.mock("$lib/server/repo/postsRepo");

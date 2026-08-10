@@ -1,5 +1,5 @@
 import {type Actions, fail} from "@sveltejs/kit";
-import {createPost} from "$lib/server/services/postService";
+import {createPost} from "$lib/server/services/postsService";
 import {requireAuth} from "$lib/server/middleware/auth";
 import type {ICreatePost} from "$lib/types";
 import {logout} from "$lib/shared/auth";
