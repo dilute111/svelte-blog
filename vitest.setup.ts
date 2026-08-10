@@ -7,4 +7,7 @@ const localStorageMock = {
     removeItem: vi.fn(),
     clear: vi.fn(),
 };
+
+vi.stubGlobal('fetch', vi.fn());
+
 Object.defineProperty(window, 'localStorage', { value: localStorageMock });

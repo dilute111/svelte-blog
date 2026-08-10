@@ -4,6 +4,12 @@ import {createPost, deletePost, getPost, getPosts, initPosts, resetRepo, updateP
 beforeEach(() => {
     resetRepo()
 })
+const MOCK_POSTS = [
+    { id: 5, title: "Post 5", body: "Body 5" },
+    { id: 10, title: "Post 10", body: "Body 10" },
+];
+const MOCK_POST1 = [{ id: 1, title: "Post 1", body: "Body 1" }];
+const MOCK_POST2 = [{ id: 2, title: "Post 2", body: "Body 2" }];
 // GET
 describe("getPosts", () => {
 
@@ -107,12 +113,8 @@ describe("deletePost", () => {
 describe("initPosts", () => {
 
     it("should initialize posts", () => {
-        const mockPosts = [
-            { id: 5, title: "Post 5", body: "Body 5" },
-            { id: 10, title: "Post 10", body: "Body 10" },
-        ];
 
-        initPosts(mockPosts);
+        initPosts(MOCK_POSTS);
 
         expect(getPosts().length).toBe(2);
         expect(getPosts()[0].id).toBe(5);
@@ -120,23 +122,17 @@ describe("initPosts", () => {
     });
 
     it("should set nextId correctly after initialization", () => {
-        const mockPosts = [
-            { id: 5, title: "Post 5", body: "Body 5" },
-            { id: 10, title: "Post 10", body: "Body 10" },
-        ];
 
-        initPosts(mockPosts);
+        initPosts(MOCK_POSTS);
 
         const newPost = createPost({ title: "New", body: "New Body" });
         expect(newPost.id).toBe(11); // max id + 1
     });
 
     it("should not re-initialize if already initialized", () => {
-        const mockPosts1 = [{ id: 1, title: "Post 1", body: "Body 1" }];
-        const mockPosts2 = [{ id: 2, title: "Post 2", body: "Body 2" }];
 
-        initPosts(mockPosts1);
-        initPosts(mockPosts2);
+        initPosts(MOCK_POST1);
+        initPosts(MOCK_POST2);
 
         // Должны остаться первые посты
         expect(getPosts().length).toBe(1);
