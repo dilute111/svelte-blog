@@ -4,6 +4,7 @@
     import type {IBlogIdPageData, IPost} from "$lib/types";
     import {usePostsSvelte} from "$lib/hooks/usePosts.svelte";
     import PostDetail from "$lib/components/PostDetail.svelte";
+    import {TIMEOUTS} from "$lib/constants";
 
     let {data}: { data: IBlogIdPageData } = $props();
 
@@ -47,7 +48,7 @@
                 isLoading = false;
                 resolved = true;
             });
-        }, 3000);
+        }, TIMEOUTS.CACHE_FALLBACK);
 
         try {
             const result = await data.post;
@@ -102,14 +103,14 @@
             timeoutFired = true;
             postsStore.loadFromCache();
             notificationRef?.show('Данные из кэша (сервер не отвечает)', 'info');
-        }, 3000);
+        }, TIMEOUTS.CACHE_FALLBACK);
 
         try {
             // 3. Promise.race с таймаутом 5 секунд
             const result = await Promise.race([
                 postsStore.updatePostOnServer(id, data),
                 new Promise((_, reject) =>
-                    setTimeout(() => reject(new Error('Timeout')), 5000)
+                    setTimeout(() => reject(new Error('Timeout')), TIMEOUTS.SERVER_REQUEST)
                 )
             ]);
 

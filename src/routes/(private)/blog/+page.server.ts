@@ -3,12 +3,13 @@ import {createPost} from "$lib/server/services/postsService";
 import {requireAuth} from "$lib/server/middleware/auth";
 import type {ICreatePost} from "$lib/types";
 import {logout} from "$lib/shared/auth";
+import {INTERNAL_ROUTES} from "$lib/config/routes";
 
 export async function load({fetch, depends}) {
     depends('app:auth')
 
     const fetchPosts = async () => {
-        const res = await fetch('/api/posts')
+        const res = await fetch(`${INTERNAL_ROUTES.posts}`)
         if (res.status === 401) {
             logout()
             return {

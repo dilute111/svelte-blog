@@ -1,6 +1,5 @@
 import type {IPost} from "$lib/types";
-
-const CACHE_KEY = 'blog_posts';
+import {CACHE_KEY} from "$lib/constants";
 
 export const cacheService = {
     getPosts(): IPost[] | null {

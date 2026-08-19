@@ -2,6 +2,7 @@
 import type { IPost, IPostResponse } from "$lib/types";
 import { invalidate } from "$app/navigation";
 import {cacheService} from "$lib/services/cacheService";
+import {INTERNAL_ROUTES} from "$lib/config/routes";
 
 export class PostsStore {
     postsDataOrCachedPosts = $state<IPost[] | null>(null);
@@ -43,7 +44,7 @@ export class PostsStore {
     }
 
     updatePostOnServer = async (id: number, data: { title: string; body: string }) => {
-        const res = await fetch(`/api/posts/${id}`, {
+        const res = await fetch(`${INTERNAL_ROUTES.post(id)}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
@@ -70,7 +71,7 @@ export class PostsStore {
     }
 
     deletePostOnServer = async (id: number) => {
-        const res = await fetch(`/api/posts/${id}`, {
+        const res = await fetch(`${INTERNAL_ROUTES.post(id)}`, {
             method: 'DELETE'
         })
 

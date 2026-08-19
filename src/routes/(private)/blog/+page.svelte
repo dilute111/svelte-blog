@@ -9,6 +9,7 @@
     import PostList from "$lib/components/PostList.svelte";
     import Notification from "$lib/components/Notification.svelte";
     import {goto} from "$app/navigation";
+    import {TIMEOUTS} from "$lib/constants";
 
     let {data}: { data: IBlogPageData } = $props()
 
@@ -37,7 +38,7 @@
 
         timeoutId = setTimeout(() => {
             posts.loadFromCache();
-        }, 3000);
+        }, TIMEOUTS.CACHE_FALLBACK);
 
         await posts.loadPosts();
         clearTimeout(timeoutId);
@@ -66,14 +67,14 @@
                 type: 'info'
             }));
             window.location.reload();
-        }, 3000);
+        }, TIMEOUTS.CACHE_FALLBACK);
 
         try {
             // Заворачиваем refreshPosts в Promise.race с таймаутом
             await Promise.race([
                 posts.refreshPosts(true),
                 new Promise((_, reject) =>
-                    setTimeout(() => reject(new Error('Timeout')), 5000)
+                    setTimeout(() => reject(new Error('Timeout')), TIMEOUTS.SERVER_REQUEST)
                 )
             ]);
             sessionStorage.setItem('notification', JSON.stringify({
@@ -119,7 +120,7 @@
             await Promise.race([
                 posts.deletePostOnServer(id),
                 new Promise((_, reject) =>
-                    setTimeout(() => reject(new Error('Timeout')), 5000)
+                    setTimeout(() => reject(new Error('Timeout')), TIMEOUTS.SERVER_REQUEST)
                 )
             ])
             notificationRef?.show('Пост удалён!', 'success')

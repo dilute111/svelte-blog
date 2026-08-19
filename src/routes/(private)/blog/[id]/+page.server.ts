@@ -1,4 +1,5 @@
 import type {IBlogIdPageData} from "$lib/types";
+import {INTERNAL_ROUTES} from "$lib/config/routes";
 
 export async function load({ params, fetch, depends }) {
     depends('app:auth')
@@ -7,7 +8,7 @@ export async function load({ params, fetch, depends }) {
 
     const fetchPost = async () => {
         try {
-            const res = await fetch(`/api/posts/${id}`)
+            const res = await fetch(`${INTERNAL_ROUTES.post(id)}`)
             if (!res.ok) throw new Error('Post not found')
             return await res.json()
         } catch {
@@ -17,7 +18,7 @@ export async function load({ params, fetch, depends }) {
 
     const fetchPosts = async () => {
         try {
-            const res = await fetch('/api/posts')
+            const res = await fetch(`${INTERNAL_ROUTES.posts}`)
             if (!res.ok) throw new Error('Posts not found')
             return await res.json()
         } catch {
