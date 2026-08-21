@@ -1,7 +1,5 @@
 import {invalidate} from "$app/navigation";
 
-const STORAGE_KEY = "isLoggedIn"
-
 const listeners: (() => void)[] = []
 
 export function getAuthStatus(): boolean {
@@ -16,8 +14,6 @@ export function login(): void {
 
     if (typeof window === 'undefined') return
 
-    // localStorage - для UI
-    localStorage.setItem(STORAGE_KEY, 'true')
     // Куки для сервера
     document.cookie = 'session=true; path=/; max-age=86400'
 
@@ -29,8 +25,6 @@ export function login(): void {
 
 export function logout(): void {
     if (typeof window === 'undefined') return
-
-    localStorage.removeItem(STORAGE_KEY)
 
     document.cookie = 'session=; path=/; max-age=0'
 

@@ -1,7 +1,6 @@
 import {deletePost, getPost, updatePost} from "$lib/server/services/postsService";
 import {error, json} from "@sveltejs/kit";
 import type {IPost, IUpdatePostData} from "$lib/types";
-import {requireAuth} from "$lib/server/middleware/auth";
 
 // GET - Получить один пост (устанавливается во внутреннем API)
 export async function GET({ params, fetch }) {
@@ -13,8 +12,7 @@ export async function GET({ params, fetch }) {
     }
 }
 
-export async function PUT({ params, request, locals }){
-    requireAuth(locals)
+export async function PUT({ params, request }){
 
     const { id } = params
     const data: IUpdatePostData = await request.json()
@@ -27,8 +25,7 @@ export async function PUT({ params, request, locals }){
     return json(updated)
 }
 
-export async function DELETE({ params, locals }){
-    requireAuth(locals)
+export async function DELETE({ params }){
     const { id } = params
     await deletePost(Number(id))
     return json({ success: true })

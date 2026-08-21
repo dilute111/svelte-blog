@@ -1,6 +1,5 @@
 import {type Actions, fail} from "@sveltejs/kit";
 import {createPost} from "$lib/server/services/postsService";
-import {requireAuth} from "$lib/server/middleware/auth";
 import type {ICreatePost} from "$lib/types";
 import {logout} from "$lib/shared/auth";
 import {INTERNAL_ROUTES} from "$lib/config/routes";
@@ -15,7 +14,6 @@ export async function load({fetch, depends}) {
             return {
                 posts: [],
                 error: 'Unauthorized',
-                // shouldLogout: true
             }
         }
         const posts = await res.json()
@@ -28,8 +26,7 @@ export async function load({fetch, depends}) {
 
 export const actions: Actions = {
 
-    create: async ({ request, locals }) => {
-        requireAuth(locals)
+    create: async ({ request }) => {
 
         const data = await request.formData();
         const postData: ICreatePost = {

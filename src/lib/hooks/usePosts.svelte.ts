@@ -1,4 +1,3 @@
-// usePosts.svelte.ts
 import type { IPost, IPostResponse } from "$lib/types";
 import { invalidate } from "$app/navigation";
 import {cacheService} from "$lib/services/cacheService";
