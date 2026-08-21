@@ -7,7 +7,7 @@ export const handle: Handle = async({ event, resolve }) => {
 
     event.locals.isAuthorized = sessionCookie === "true"
 
-    if (event.url.pathname.startsWith('/api')) {
+    if (event.url.pathname.startsWith('/api') || event.url.pathname.startsWith('/blog')) {
         requireAuth(event.locals)
     }
 

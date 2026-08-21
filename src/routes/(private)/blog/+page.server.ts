@@ -3,6 +3,7 @@ import {createPost} from "$lib/server/services/postsService";
 import type {ICreatePost} from "$lib/types";
 import {logout} from "$lib/shared/auth";
 import {INTERNAL_ROUTES} from "$lib/config/routes";
+import {requireAuth} from "$lib/server/middleware/auth";
 
 export async function load({fetch, depends}) {
     depends('app:auth')
@@ -25,9 +26,10 @@ export async function load({fetch, depends}) {
 }
 
 export const actions: Actions = {
-
-    create: async ({ request }) => {
-
+    // Создание поста неявно вызывается внутри TheForm.svelte, делая запрос на экшен (fetch('?/create'))
+    // requireAuth здесь обязателен, т.к. хуки не перехватывают POST-запросы к экшенам.
+    create: async ({ request, locals }) => {
+        requireAuth(locals)
         const data = await request.formData();
         const postData: ICreatePost = {
             title: data.get('title') as string,
