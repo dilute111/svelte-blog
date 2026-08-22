@@ -1,49 +1,49 @@
 import type {ICreatePost, IPost, IUpdatePostData} from "$lib/types";
+import {db} from "$lib/server/db/db";
 
-let posts: IPost[] = []
-let nextId = 1
 let initialized = false
 
 export function resetRepo() {
-    posts = []
-    nextId = 1
-    initialized = false
+    db.posts.clear();
+    initialized = false;
 }
 
 export function initPosts(data: IPost[]) {
     if (!initialized) {
-        posts = data.map(p => ({...p}))
-        nextId = Math.max(...posts.map(p => p.id), 0) + 1
-        initialized = true
+        db.posts.clear();
+        data.forEach(post => {
+            db.posts.insertWithId({
+                id: post.id,
+                title: post.title,
+                body: post.body,
+                userId: post.userId || 1,
+                createdAt: post.createdAt || new Date().toISOString(),
+            });
+        });
+        initialized = true;
     }
 }
 
 export function getPosts(): IPost[] {
-    return posts
+    return db.posts.findAll();
 }
 
 export function getPost(id: number): IPost | undefined {
-    return posts.find(p => p.id === id)
+    return db.posts.findById(id);
 }
 
 export function createPost(data: ICreatePost): IPost {
-    const newPost: IPost = { id: nextId++, ...data }
-    posts.push(newPost)
-    return newPost
+    return db.posts.insert({
+        ...data,
+        userId: 1,
+        createdAt: new Date().toISOString(),
+    });
 }
 
 export function updatePost( id: number, data: IUpdatePostData ): IPost | null {
-    const index = posts.findIndex(p => p.id === id)
-    if (index === -1) return null
-
-    const updated = { ...posts[index], ...data}
-    posts[index] = updated
-    return updated
+    return db.posts.update(id, data);
 }
 
 export function deletePost(id: number): boolean {
-    const index = posts.findIndex(p => p.id === id)
-    if (index === -1) return false
-    posts.splice(index, 1)
-    return true
+    return db.posts.delete(id);
 }
