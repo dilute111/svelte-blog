@@ -4,22 +4,15 @@ import type {FetchFunction, ICreatePost, IPost, IUpdatePostData} from "$lib/type
 import {jsonplaceholderClient} from "$lib/server/api/jsonplaceholderClient";
 
 export async function getPosts(fetch: FetchFunction): Promise<IPost[]> {
-    // Проверяем, есть ли посты в базе
     const posts = await postRepo.getPosts();
 
-    // Если база пустая - заполняем из API (первый запуск)
-    if (posts.length === 0) {
         try {
             const data = await jsonplaceholderClient.getPosts(fetch);
             await postRepo.initPosts(data);
             return postRepo.getPosts();
         } catch {
-            return [];
+            return posts;
         }
-    }
-
-    // Если посты есть - просто возвращаем их
-    return posts;
 }
 
 export async function getPost(id: string, fetch: FetchFunction): Promise<IPost> {
