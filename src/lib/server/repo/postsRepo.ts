@@ -1,38 +1,38 @@
 import type {ICreatePost, IPost, IUpdatePostData} from "$lib/types";
 import {db} from "$lib/server/db/db";
 
-let initialized = false
-
-export function resetRepo() {
-    db.posts.clear();
-    initialized = false;
+export async function resetRepo() {
+    await db.posts.clear();
 }
 
-export function initPosts(data: IPost[]) {
-    if (!initialized) {
-        db.posts.clear();
-        data.forEach(post => {
-            db.posts.insertWithId({
-                id: post.id,
-                title: post.title,
-                body: post.body,
-                userId: post.userId || 1,
-                createdAt: post.createdAt || new Date().toISOString(),
-            });
+export async function initPosts(data: IPost[]) {
+    // Проверяем, есть ли уже посты в базе
+    const existing = await db.posts.findAll();
+    if (existing.length > 0) return; // Если посты есть - не трогаем
+
+    // Вставляем только если база пустая (первый запуск)
+    for (const post of data) {
+        await db.posts.insertWithId({
+            id: post.id,
+            title: post.title,
+            body: post.body,
+            userId: post.userId || 1,
+            createdAt: post.createdAt || new Date().toISOString(),
         });
-        initialized = true;
     }
+    await db.posts.resetSequence();
 }
 
-export function getPosts(): IPost[] {
+
+export async function getPosts(): Promise<IPost[]> {
     return db.posts.findAll();
 }
 
-export function getPost(id: number): IPost | undefined {
+export async function getPost(id: number): Promise<IPost | null> {
     return db.posts.findById(id);
 }
 
-export function createPost(data: ICreatePost): IPost {
+export async function createPost(data: ICreatePost): Promise<IPost> {
     return db.posts.insert({
         ...data,
         userId: 1,
@@ -40,10 +40,10 @@ export function createPost(data: ICreatePost): IPost {
     });
 }
 
-export function updatePost( id: number, data: IUpdatePostData ): IPost | null {
+export async function updatePost(id: number, data: IUpdatePostData): Promise<IPost | null> {
     return db.posts.update(id, data);
 }
 
-export function deletePost(id: number): boolean {
+export async function deletePost(id: number): Promise<boolean> {
     return db.posts.delete(id);
 }

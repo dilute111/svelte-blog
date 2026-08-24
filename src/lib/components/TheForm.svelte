@@ -1,6 +1,6 @@
 <script lang="ts">
     import { enhance } from '$app/forms';
-    import {invalidate} from "$app/navigation";
+    import {invalidate, invalidateAll} from "$app/navigation";
     import type {IFormProps} from "$lib/types";
 
 
@@ -36,30 +36,24 @@
                 body: fd
             })
 
-            const result = await response.json()
-
             if (!response.ok) {
-                throw new Error(result.error || 'Ошибка отправки')
+                const result = await response.json().catch(() => ({}))
+
+                throw new Error(typeof result.error === 'string' ? result.error : result.error?.message || 'Ошибка отправки')
             }
+            const title = fd.get('title') as string
+            const body = fd.get('body') as string
+
+            // Вызываем onSubmit с данными
+            await onSubmit?.({ title, body })
 
             resetForm()
-
-            if (onSubmit) {
-                const formDataObj: Record<string, string> = {}
-                fd.forEach((value, key) => {
-                    formDataObj[key] = value.toString()
-                })
-                await onSubmit(formDataObj, result)
-            }
-            await invalidate('app:auth');
-
         } catch (err) {
             handleError(err)
         } finally {
             isSubmitting = false
+            cancel()
         }
-
-        cancel()
     }
 </script>
 

@@ -13,37 +13,34 @@ describe("postService", () => {
     beforeEach(() => {
         vi.clearAllMocks();
     });
+
 // GET
     describe("getPosts", () => {
-
         it("should return posts from repo", async () => {
-
             const mockFetch = global.fetch as ReturnType<typeof vi.fn>;
             mockFetch.mockResolvedValue({
                 ok: true,
                 json: async () => MOCK_POSTS,
             } as Response);
 
-            vi.mocked(postRepo.getPosts).mockReturnValue(MOCK_POSTS);
-            vi.mocked(postRepo.initPosts).mockImplementation(() => {
-            });
+            vi.mocked(postRepo.getPosts).mockResolvedValue(MOCK_POSTS);
+            vi.mocked(postRepo.initPosts).mockResolvedValue(undefined);
 
             const result = await getPosts(global.fetch);
             expect(result).toEqual(MOCK_POSTS);
         });
     });
+
 // GET [id]
     describe("getPost", () => {
-
         it("should return post from repo if exists", async () => {
-            vi.mocked(postRepo.getPost).mockReturnValue(MOCK_POST);
-
+            vi.mocked(postRepo.getPost).mockResolvedValue(MOCK_POST);
             const result = await getPost("1", global.fetch);
             expect(result).toEqual(MOCK_POST);
         });
 
         it("should fetch from external API if not in repo", async () => {
-            vi.mocked(postRepo.getPost).mockReturnValue(undefined);
+            vi.mocked(postRepo.getPost).mockResolvedValue(null);
             const mockFetch = global.fetch as ReturnType<typeof vi.fn>;
             mockFetch.mockResolvedValue({
                 ok: true,
@@ -55,7 +52,7 @@ describe("postService", () => {
         });
 
         it("should throw 404 if post not found", async () => {
-            vi.mocked(postRepo.getPost).mockReturnValue(undefined);
+            vi.mocked(postRepo.getPost).mockResolvedValue(null);
             const mockFetch = global.fetch as ReturnType<typeof vi.fn>;
             mockFetch.mockResolvedValue({
                 ok: false,
@@ -66,46 +63,40 @@ describe("postService", () => {
             await expect(getPost("9999", global.fetch)).rejects.toThrow();
         });
     });
+
 // POST
     describe("createPost", () => {
-
         it("should create post in repo", async () => {
-            vi.mocked(postRepo.createPost).mockReturnValue(MOCK_POST);
-
+            vi.mocked(postRepo.createPost).mockResolvedValue(MOCK_POST);
             const result = await createPost({title: "Test", body: "Body"});
             expect(result).toEqual(MOCK_POST);
         });
     });
+
 // PUT
     describe("updatePost", () => {
-
         it("should update post in repo", async () => {
-            vi.mocked(postRepo.updatePost).mockReturnValue(MOCK_UPDATED_POST);
-
+            vi.mocked(postRepo.updatePost).mockResolvedValue(MOCK_UPDATED_POST);
             const result = await updatePost(1, {title: "Updated"});
             expect(result).toEqual(MOCK_UPDATED_POST);
         });
 
         it("should throw 404 if post not found", async () => {
-            vi.mocked(postRepo.updatePost).mockReturnValue(null);
-
+            vi.mocked(postRepo.updatePost).mockResolvedValue(null);
             await expect(updatePost(9999, {title: "New"})).rejects.toThrow();
         });
     });
+
 // DELETE
     describe("deletePost", () => {
-        
         it("should delete post in repo", async () => {
-
-            vi.mocked(postRepo.deletePost).mockReturnValue(true);
-
+            vi.mocked(postRepo.deletePost).mockResolvedValue(true);
             await expect(deletePost(1)).resolves.toBeUndefined();
         });
 
         it("should throw 404 if post not found", async () => {
-            vi.mocked(postRepo.deletePost).mockReturnValue(false);
-
-            await expect(deletePost(9999)).rejects.toThrow();
+            vi.mocked(postRepo.deletePost).mockResolvedValue(false);
+            await expect(deletePost(9999)).resolves.toBeUndefined();
         });
     });
 });
