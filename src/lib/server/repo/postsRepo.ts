@@ -6,11 +6,6 @@ export async function resetRepo() {
 }
 
 export async function initPosts(data: IPost[]) {
-    // Проверяем, есть ли уже посты в базе
-    const existing = await db.posts.findAll();
-    if (existing.length > 0) return; // Если посты есть - не трогаем
-
-    // Вставляем только если база пустая (первый запуск)
     for (const post of data) {
         await db.posts.insertWithId({
             id: post.id,
