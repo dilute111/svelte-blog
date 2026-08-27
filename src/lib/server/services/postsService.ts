@@ -6,13 +6,18 @@ import {jsonplaceholderClient} from "$lib/server/api/jsonplaceholderClient";
 export async function getPosts(fetch: FetchFunction): Promise<IPost[]> {
     const posts = await postRepo.getPosts();
 
+    // Если база пустая - заполняем из API (первый запуск)
+    if (posts.length === 0) {
         try {
             const data = await jsonplaceholderClient.getPosts(fetch);
             await postRepo.initPosts(data);
             return postRepo.getPosts();
         } catch {
-            return posts;
+            return [];
+
         }
+    }
+    return posts;
 }
 
 export async function getPost(id: string, fetch: FetchFunction): Promise<IPost> {
