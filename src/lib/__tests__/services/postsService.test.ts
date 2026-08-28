@@ -1,6 +1,7 @@
-import {beforeEach, describe, expect, it, vi} from "vitest";
+import {describe, expect, it, vi} from "vitest";
 import * as postRepo from "$lib/server/repo/postsRepo";
 import {createPost, deletePost, getPost, getPosts, updatePost} from "$lib/server/services/postsService";
+import {MOCK_NEW_POST} from "$lib/__tests__/mockData";
 
 // Мокаем репозиторий
 vi.mock("$lib/server/repo/postsRepo");
@@ -10,22 +11,10 @@ const MOCK_POSTS = [MOCK_POST]
 const MOCK_UPDATED_POST = {id: 1, title: "Updated", body: "Body"};
 
 describe("postService", () => {
-    beforeEach(() => {
-        vi.clearAllMocks();
-    });
-
 // GET
     describe("getPosts", () => {
         it("should return posts from repo", async () => {
-            const mockFetch = global.fetch as ReturnType<typeof vi.fn>;
-            mockFetch.mockResolvedValue({
-                ok: true,
-                json: async () => MOCK_POSTS,
-            } as Response);
-
             vi.mocked(postRepo.getPosts).mockResolvedValue(MOCK_POSTS);
-            vi.mocked(postRepo.initPosts).mockResolvedValue(undefined);
-
             const result = await getPosts(global.fetch);
             expect(result).toEqual(MOCK_POSTS);
         });
@@ -67,9 +56,9 @@ describe("postService", () => {
 // POST
     describe("createPost", () => {
         it("should create post in repo", async () => {
-            vi.mocked(postRepo.createPost).mockResolvedValue(MOCK_POST);
-            const result = await createPost({title: "Test", body: "Body"});
-            expect(result).toEqual(MOCK_POST);
+            vi.mocked(postRepo.createPost).mockResolvedValue(MOCK_NEW_POST);
+            const result = await createPost({title: "New Post", body: "New Body"});
+            expect(result).toEqual(MOCK_NEW_POST);
         });
     });
 

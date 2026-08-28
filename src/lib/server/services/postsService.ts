@@ -14,7 +14,6 @@ export async function getPosts(fetch: FetchFunction): Promise<IPost[]> {
             return postRepo.getPosts();
         } catch {
             return [];
-
         }
     }
     return posts;

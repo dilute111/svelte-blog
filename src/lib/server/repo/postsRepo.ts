@@ -7,6 +7,7 @@ export async function resetRepo() {
 
 export async function initPosts(data: IPost[]) {
     await db.posts.clear();
+
     for (const post of data) {
         await db.posts.insertWithId({
             id: post.id,

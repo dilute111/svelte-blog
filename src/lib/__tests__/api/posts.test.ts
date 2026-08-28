@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { GET, POST } from '../../../routes/api/posts/+server';
+import {describe, expect, it, vi} from 'vitest';
+import {GET, POST} from '../../../routes/api/posts/+server';
 import * as postService from '$lib/server/services/postsService';
-import { requireAuth } from '$lib/server/middleware/auth';
+import {requireAuth} from '$lib/server/middleware/auth';
 import type {RequestEvent} from "@sveltejs/kit";
 import type {HttpError} from "$lib/__tests__/test.utils";
 
@@ -14,11 +14,7 @@ const MOCK_POSTS = [
 ];
 const MOCK_NEW_POST = { id: 3, title: 'New Post', body: 'New Body' };
 
-
 describe('API /api/posts', () => {
-    beforeEach(() => {
-        vi.clearAllMocks();
-    });
 
     describe('GET', () => {
         it('should return posts', async () => {
