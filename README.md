@@ -1,42 +1,55 @@
-# sv
+# Svelte Blog
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+Блог на SvelteKit с PostgreSQL.
 
-## Creating a project
+## Запуск проекта
 
-If you're seeing this, you've probably already done this step. Congrats!
+### 1. Запусти Docker (PostgreSQL)
 
-```sh
-# create a new project
-npx sv create my-app
+```bash
+docker run -d --name svelte-blog-db \
+-e POSTGRES_PASSWORD=password \
+-e POSTGRES_DB=svelte_blog \
+-p 5432:5432 postgres
 ```
+### 2. Создай таблицу
 
-To recreate this project with the same configuration:
+Сначала подключись к базе данных:
 
-```sh
-# recreate this project
-npx sv@0.16.2 create --template minimal --types ts --add prettier eslint --install npm svelte-blog
+```bash
+docker exec -it svelte-blog-db psql -U postgres -d svelte_blog
 ```
+После подключения (появится приглашение svelte_blog=#), выполни:
 
-## Developing
+```bash (sql)
+CREATE TABLE IF NOT EXISTS posts (
+id SERIAL PRIMARY KEY,
+title VARCHAR(255) NOT NULL,
+body TEXT NOT NULL,
+user_id INTEGER NOT NULL,
+created_at TIMESTAMP DEFAULT NOW()
+);
+```
+### 3. Запусти проект
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
-
-```sh
+```bash
+npm install
 npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
 ```
+Проект будет доступен на http://localhost:5173
 
-## Building
+## Структура
 
-To create a production version of your app:
+src/lib/server/db/db.ts - подключение к PostgreSQL
 
-```sh
-npm run build
-```
+src/lib/server/repo/postsRepo.ts - репозиторий
 
-You can preview the production build with `npm run preview`.
+src/lib/server/services/postsService.ts - сервис
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+src/lib/__tests__/ - тесты
+
+## Технологии
+
+- SvelteKit
+- PostgreSQL
+- Zod (валидация)
