@@ -1,6 +1,7 @@
 import {createPost, getPosts} from "$lib/server/services/postsService";
 import {error, json} from "@sveltejs/kit";
 import type {ICreatePost, IPost} from "$lib/types";
+import {createPostSchema} from "$lib/server/validation/postSchema";
 
 
 
@@ -11,19 +12,18 @@ export async function GET({ fetch }) {
 }
 
 export async function POST({ request }) {
-    // 1. Check authorization
-
-    // 2. Parse request body
+    // 1. Parse request data
     const { title, body } = await request.json() as ICreatePost
+    const parsed = createPostSchema.safeParse({ title, body });
 
-    // 3. Validation
-    if (!title || !body) {
-        error(400, 'Title and body are required')
+    // 2. Validation
+    if (!parsed.success) {
+        error(400, parsed.error.issues[0].message);
     }
 
-    // 4. Create post
-    const newPost: IPost = await createPost({ title, body})
+    // 3. Create post
+    const newPost: IPost = await createPost(parsed.data)
 
-    // 5. Return response
+    // 4. Return response
     return json(newPost, { status: 201 })
 }

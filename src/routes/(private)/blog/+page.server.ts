@@ -4,6 +4,7 @@ import type {ICreatePost} from "$lib/types";
 import {logout} from "$lib/shared/auth";
 import {INTERNAL_ROUTES} from "$lib/config/routes";
 import {requireAuth} from "$lib/server/middleware/auth";
+import {createPostSchema} from "$lib/server/validation/postSchema";
 
 export async function load({fetch, depends}) {
     depends('app:auth')
@@ -31,16 +32,19 @@ export const actions: Actions = {
     create: async ({ request, locals }) => {
         requireAuth(locals)
         const data = await request.formData();
-        const postData: ICreatePost = {
-            title: data.get('title') as string,
-            body: data.get('body') as string
+
+        const parsed = createPostSchema.safeParse({
+            title: data.get('title') ?? '',
+            body: data.get('body') ?? '',
+        });
+
+        if (!parsed.success) {
+            return fail(400, {
+                error: parsed.error.issues[0].message
+            });
         }
 
-        if (!postData.title || !postData.body) {
-            return fail(400, { error: 'Title and body are required' });
-        }
-
-        await createPost( postData );
+        await createPost( parsed.data );
         return { success: true };
     }
 };

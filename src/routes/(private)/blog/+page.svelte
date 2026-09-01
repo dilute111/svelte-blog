@@ -13,6 +13,7 @@
 
     let {data}: { data: IBlogPageData } = $props()
 
+
     let isModalOpen = $state(false)
 
     const posts = usePostsSvelte(data.posts);
@@ -47,7 +48,18 @@
     let notificationRef: { show: (msg: string, type: string) => void };
 
     async function handlePostCreated(formData: Record<string, string>) {
-        isModalOpen = false;
+        try {
+            await posts.refreshPosts(true);
+            // Если всё успешно, закрываем модалку
+            isModalOpen = false;
+        } catch (err) {
+            // Показываем ошибку
+            if (err instanceof Error) {
+                notificationRef?.show(err.message, 'error');
+            } else {
+                notificationRef?.show('Произошла ошибка', 'error');
+            }
+        }
 
         posts.addPostOptimistically({
             title: formData.title,
