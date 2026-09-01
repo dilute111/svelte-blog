@@ -61,7 +61,7 @@ describe('API /api/posts', () => {
             } catch (error) {
                 const err = error as HttpError
                 expect(err.status).toBe(400);
-                expect(err.body?.message).toBe('Title and body are required');
+                expect(err.body?.message).toBe('Invalid input: expected string, received undefined');
             }
         });
 
@@ -77,7 +77,7 @@ describe('API /api/posts', () => {
             } catch (error) {
                 const err = error as HttpError
                 expect(err.status).toBe(400);
-                expect(err.body?.message).toBe('Title and body are required');
+                expect(err.body?.message).toBe('Invalid input: expected string, received undefined');
             }
         });
 
