@@ -29,7 +29,7 @@ export interface IPostProps {
     editBody: string
     onTitleChange: (value: string) => void
     onBodyChange: (value: string) => void
-    onSave?: () => void;
+    onSave?: () => Promise<void>
     onCancel?: () => void;
     onEdit?: () => void;
 }

@@ -40,11 +40,15 @@ export const actions: Actions = {
 
         if (!parsed.success) {
             return fail(400, {
-                error: parsed.error.issues[0].message
+                error: parsed.error.issues[0].message,
+                success: false
             });
         }
 
         await createPost( parsed.data );
-        return { success: true };
+        return {
+            success: true,
+            message: 'Пост создан успешно'
+        };
     }
 };

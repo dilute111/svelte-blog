@@ -14,6 +14,21 @@
         onEdit
     }: IPostProps = $props();
 
+    let isSubmitting = $state(false);
+    let saveError = $state<string | null>(null);
+
+    async function handleSave() {
+        isSubmitting = true;
+        saveError = null;
+
+        try {
+            await onSave?.();
+        } catch (err) {
+            saveError = err instanceof Error ? err.message : 'Ошибка при сохранении';
+        } finally {
+            isSubmitting = false;
+        }
+    }
 </script>
 
 {#if post}
@@ -31,8 +46,21 @@
                         rows={10}
                         placeholder="Текст поста"
                 />
-                <button onclick={() => onSave?.()}>Сохранить</button>
-                <button onclick={onCancel}>Отмена</button>
+
+                {#if saveError}
+                    <div class="error-message">
+                        {saveError}
+                    </div>
+                {/if}
+
+                <button onclick={handleSave} disabled={isSubmitting}>
+                    {#if isSubmitting}
+                        Сохранение...
+                    {:else}
+                        Сохранить
+                    {/if}
+                </button>
+                <button onclick={onCancel} disabled={isSubmitting}>Отмена</button>
             {:else}
                 <h1>{post.title}</h1>
                 <div class="post-body">
@@ -87,6 +115,16 @@
         text-align: center;
     }
 
+    .error-message {
+        padding: 0.75rem 1rem;
+        margin-bottom: 1rem;
+        background: #fef2f2;
+        color: #dc2626;
+        border: 1px solid #fecaca;
+        border-radius: var(--border-radius, 8px);
+        font-size: 0.9rem;
+    }
+
     .not-found {
         color: var(--text-muted, #6b7280);
         text-align: center;
@@ -113,4 +151,9 @@
     }
 
     button:hover { background: var(--primary-hover); }
+
+    button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
 </style>

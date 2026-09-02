@@ -1,7 +1,5 @@
 <script lang="ts">
-    import {enhance} from '$app/forms';
     import type {IFormProps} from "$lib/types";
-
 
     let {fields, submitText = 'Отправить', onSubmit}: IFormProps = $props()
 
@@ -21,42 +19,54 @@
     }
 
     function handleError(err: unknown) {
-        error = err instanceof Error? err.message : 'Произошла ошибка при отправке'
+        error = err instanceof Error ? err.message : 'Произошла ошибка при отправке'
         isSubmitting = false
     }
 
-    async function handleFormSubmit({ formData: fd, cancel }: { formData: FormData; cancel: () => void }) {
+    async function handleFormSubmit(event: SubmitEvent) {
+        event.preventDefault();
+
+        const form = event.currentTarget as HTMLFormElement;
+        const fd = new FormData(form);
+        const title = fd.get('title') as string;
+        const body = fd.get('body') as string;
+
         isSubmitting = true
         error = null
 
         try {
-            const response = await fetch(formElement?.action || '', {
+            const response = await fetch('/api/posts', {
                 method: 'POST',
-                body: fd
-            })
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ title, body })
+            });
 
-            if (!response.ok) {
-                const result = await response.json().catch(() => ({}))
+            const resultData = await response.json();
 
-                throw new Error(typeof result.error === 'string' ? result.error : result.error?.message || 'Ошибка отправки')
+            // Проверяем success из ответа
+            if (!response.ok || resultData.success === false) {
+                throw new Error(resultData.error || 'Ошибка валидации');
             }
-            const title = fd.get('title') as string
-            const body = fd.get('body') as string
 
             // Вызываем onSubmit с данными
-            await onSubmit?.({ title, body })
+            await onSubmit?.({title, body}, {
+                success: true,
+                message: resultData.message
+            });
 
-            resetForm()
+            resetForm();
+
         } catch (err) {
-            handleError(err)
+            handleError(err);
         } finally {
-            isSubmitting = false
-            cancel()
+            isSubmitting = false;
         }
     }
 </script>
 
-<form method="POST" action="?/create" use:enhance={handleFormSubmit} bind:this={formElement}>
+<form method="POST" onsubmit={handleFormSubmit} bind:this={formElement}>
     {#if error}
         <div class="error-message">
             {error}
@@ -95,7 +105,6 @@
             {submitText}
         {/if}
     </button>
-
 </form>
 
 <style>

@@ -6,8 +6,15 @@ export interface IFormField {
     required?: boolean
 }
 
+export interface IFormSubmitResult {
+    success: boolean;
+    error?: string;
+    message?: string;
+}
+
+
 export interface IFormProps {
     fields: IFormField[]
     submitText?: string
-    onSubmit: (data: Record<string, string>, result?: any) => Promise<void>
+    onSubmit: (data: Record<string, string>, result?: IFormSubmitResult) => Promise<void> | void
 }

@@ -42,12 +42,18 @@ describe('API /api/posts', () => {
             const data = await response.json();
 
             expect(response.status).toBe(201);
-            expect(data).toEqual(MOCK_NEW_POST);
+            // Обновляем ожидание - теперь ответ содержит success, message, post
+            expect(data).toEqual({
+                success: true,
+                message: 'Пост создан успешно',
+                post: MOCK_NEW_POST
+            });
             expect(postService.createPost).toHaveBeenCalledWith({
                 title: 'New Post',
                 body: 'New Body',
             });
         });
+
 
         it('should return 400 if title is missing', async () => {
             vi.mocked(requireAuth).mockImplementation(() => {});

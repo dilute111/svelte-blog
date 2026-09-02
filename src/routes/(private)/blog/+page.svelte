@@ -4,7 +4,7 @@
     import {onMount} from "svelte";
     import TheForm from "$lib/components/TheForm.svelte";
     import Modal from "$lib/components/Modal.svelte";
-    import type {IBlogPageData} from "$lib/types";
+    import type {IBlogPageData, IFormSubmitResult} from "$lib/types";
     import {usePostsSvelte} from "$lib/hooks/usePosts.svelte";
     import PostList from "$lib/components/PostList.svelte";
     import Notification from "$lib/components/Notification.svelte";
@@ -47,7 +47,13 @@
 
     let notificationRef: { show: (msg: string, type: string) => void };
 
-    async function handlePostCreated(formData: Record<string, string>) {
+    async function handlePostCreated(formData: Record<string, string>, result?: IFormSubmitResult) {
+        // Если есть ошибка валидации - не закрываем модалку и не перезагружаем
+        if (result && result.success === false) {
+            notificationRef?.show(result.error || 'Ошибка валидации', 'error');
+            return; // Модалка останется открытой
+        }
+
         try {
             await posts.refreshPosts(true);
             // Если всё успешно, закрываем модалку
@@ -61,6 +67,7 @@
             }
         }
 
+        // Оптимистичное добавление
         posts.addPostOptimistically({
             title: formData.title,
             body: formData.body
@@ -108,6 +115,7 @@
             clearTimeout(timeoutId);
         }
     }
+
 
     async function handleDeletePost(id: number) {
         // 1. Подтверждение удаления

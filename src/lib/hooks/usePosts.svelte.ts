@@ -50,12 +50,21 @@ export class PostsStore {
         })
 
         if (!res.ok) {
-            const err = await res.json()
-            throw new Error(err.message || 'Failed to update post')
+            const resultData = await res.json().catch(() => ({}));
+            const err = new Error(resultData.error || 'Failed to update post');
+            throw err;
         }
 
-        return await res.json()
+        const resultData = await res.json();
+
+        // Проверяем success из ответа
+        if (resultData.success === false) {
+            throw new Error(resultData.error || 'Failed to update post');
+        }
+
+        return resultData.post || resultData;
     }
+
 
     constructor(postsPromise: Promise<{ posts: IPost[] }>) {
         this.postsPromise = postsPromise;

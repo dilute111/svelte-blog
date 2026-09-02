@@ -90,7 +90,7 @@
         // 1. Оптимистичное обновление
         const updatedPost = postsStore.updatePostOptimistically(id, data);
         if (updatedPost) {
-            post = updatedPost;  // ← сразу обновляем локальный post
+            post = updatedPost;
         }
 
         notificationRef?.show('Обновляем пост...', 'info');
@@ -98,7 +98,6 @@
         let timeoutId: NodeJS.Timeout;
         let timeoutFired = false;
 
-        // 2. Таймаут 3 секунды
         timeoutId = setTimeout(() => {
             timeoutFired = true;
             postsStore.loadFromCache();
@@ -106,7 +105,6 @@
         }, TIMEOUTS.CACHE_FALLBACK);
 
         try {
-            // 3. Promise.race с таймаутом 5 секунд
             const result = await Promise.race([
                 postsStore.updatePostOnServer(id, data),
                 new Promise((_, reject) =>
@@ -119,20 +117,16 @@
             }
             notificationRef?.show('Пост обновлён!', 'success');
             isEditing = false;
-        } catch {
+        } catch (err) {
             if (!timeoutFired) {
-                notificationRef?.show('Ошибка при обновлении поста', 'error');
-                postsStore.loadFromCache();
-                // Обновление post из кэша при ошибке
-                const cached = postsStore.getPost(id);
-                if (cached) {
-                    post = cached;
-                }
+                // ВАЖНО: бросаем ошибку, чтобы PostDetail мог ее поймать
+                throw err;
             }
         } finally {
             clearTimeout(timeoutId);
         }
     }
+
 
     function handleCancel() {
         isEditing = false;
