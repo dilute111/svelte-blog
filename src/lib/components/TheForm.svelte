@@ -1,7 +1,12 @@
 <script lang="ts">
     import type {IFormProps} from "$lib/types";
 
-    let {fields, submitText = 'Отправить', onSubmit}: IFormProps = $props()
+    let {
+        fields,
+        submitText = 'Отправить',
+        endpoint,
+        onSubmit
+    }: IFormProps = $props()
 
     let formData = $state<Record<string, string>>({})
     let isSubmitting = $state(false)
@@ -35,7 +40,7 @@
         error = null
 
         try {
-            const response = await fetch('/api/posts', {
+            const response = await fetch(endpoint, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

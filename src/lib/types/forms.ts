@@ -16,5 +16,6 @@ export interface IFormSubmitResult {
 export interface IFormProps {
     fields: IFormField[]
     submitText?: string
+    endpoint: string
     onSubmit: (data: Record<string, string>, result?: IFormSubmitResult) => Promise<void> | void
 }

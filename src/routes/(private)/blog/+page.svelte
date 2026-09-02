@@ -187,6 +187,7 @@
         { name: 'body', label: 'Текст', type: 'textarea', placeholder: 'Введите текст поста' }
     ]}
             submitText="Создать пост"
+            endpoint="/api/posts"
             onSubmit={handlePostCreated}
     />
 </Modal>
