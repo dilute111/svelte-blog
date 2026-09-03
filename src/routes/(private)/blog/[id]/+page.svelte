@@ -119,14 +119,12 @@
             isEditing = false;
         } catch (err) {
             if (!timeoutFired) {
-                // ВАЖНО: бросаем ошибку, чтобы PostDetail мог ее поймать
                 throw err;
             }
         } finally {
             clearTimeout(timeoutId);
         }
     }
-
 
     function handleCancel() {
         isEditing = false;
